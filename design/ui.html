@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPORTS HUB - 东南亚球拍专业商城</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#E64A19', // 东南亚风格橙色
+            secondary: '#2E7D32', // 绿色
+            accent: '#FFC107', // 黄色
+            dark: '#263238',
+            light: '#F5F5F5',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-primary/90 hover:shadow-lg transform hover:-translate-y-0.5;
+      }
+      .btn-secondary {
+        @apply bg-secondary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-secondary/90 hover:shadow-lg transform hover:-translate-y-0.5;
+      }
+    }
+  </style>
+  
+  <style>
+    /* 东南亚风格背景纹理 */
+    .bg-sea-pattern {
+      background-image: url('https://picsum.photos/id/1043/1000/1000');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+    }
+    
+    .bg-batik {
+      background-image: url('https://picsum.photos/id/104/1000/1000');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: soft-light;
+    }
+    
+    /* 滚动动画 */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #E64A19;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d84416;
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-light text-dark antialiased">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white/95 shadow-sm">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#" class="flex items-center space-x-2">
+        <i class="fa fa-bolt text-primary text-2xl"></i>
+        <span class="text-xl font-bold text-primary">SPORTS HUB</span>
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="#" class="font-medium hover:text-primary transition-colors">首页</a>
+        <div class="relative group">
+          <a href="#products" class="font-medium hover:text-primary transition-colors flex items-center">
+            商品分类
+            <i class="fa fa-chevron-down ml-1 text-xs transition-transform group-hover:rotate-180"></i>
+          </a>
+          <div class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+            <a href="#pingpong" class="block px-4 py-2 hover:bg-primary/10 hover:text-primary transition-colors">乒乓球拍</a>
+            <a href="#badminton" class="block px-4 py-2 hover:bg-primary/10 hover:text-primary transition-colors">羽毛球拍</a>
+          </div>
+        </div>
+        <a href="#about" class="font-medium hover:text-primary transition-colors">关于我们</a>
+        <a href="#contact" class="font-medium hover:text-primary transition-colors">联系我们</a>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menuBtn" class="md:hidden text-dark text-xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobileMenu" class="md:hidden bg-white shadow-lg absolute w-full left-0 top-full transform -translate-y-full opacity-0 invisible transition-all duration-300">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+        <a href="#" class="font-medium hover:text-primary transition-colors py-2 border-b border-gray-100">首页</a>
+        <div class="border-b border-gray-100 pb-2">
+          <a href="#products" class="font-medium hover:text-primary transition-colors flex items-center justify-between">
+            商品分类
+            <i class="fa fa-chevron-down text-xs"></i>
+          </a>
+          <div class="ml-4 mt-2 space-y-2">
+            <a href="#pingpong" class="block hover:text-primary transition-colors">乒乓球拍</a>
+            <a href="#badminton" class="block hover:text-primary transition-colors">羽毛球拍</a>
+          </div>
+        </div>
+        <a href="#about" class="font-medium hover:text-primary transition-colors py-2 border-b border-gray-100">关于我们</a>
+        <a href="#contact" class="font-medium hover:text-primary transition-colors py-2">联系我们</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-sea-pattern bg-primary/10">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+      <div class="md:w-1/2 fade-in">
+        <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4 text-shadow">
+          优质球拍，<br>
+          <span class="text-primary">提升你的运动表现</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
+          为东南亚运动员打造的专业球拍系列，无论是乒乓球还是羽毛球，都能助你发挥最佳水平。
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="#products" class="btn-primary text-center">
+            浏览商品
+          </a>
+          <a href="#contact" class="btn-secondary text-center">
+            联系商家
+          </a>
+        </div>
+      </div>
+      <div class="md:w-1/2 mt-12 md:mt-0 fade-in" style="transition-delay: 0.2s;">
+        <div class="relative">
+          <img src="https://picsum.photos/id/1060/600/400" alt="专业球拍展示" class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]">
+          <div class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3">
+            <p class="font-bold text-lg">限时优惠</p>
+            <p class="text-sm">全场8折起</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 商品分类区域 -->
+  <section id="products" class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 fade-in">
+        <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-4">商品分类</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">选择适合你的专业球拍，提升运动表现，享受竞技乐趣</p>
+      </div>
+      
+      <!-- 分类标签 -->
+      <div class="flex justify-center mb-12 overflow-x-auto pb-2 fade-in">
+        <div class="inline-flex bg-gray-100 rounded-full p-1">
+          <button class="category-btn active px-6 py-2 rounded-full font-medium text-primary bg-white shadow-sm" data-category="all">
+            全部商品
+          </button>
+          <button class="category-btn px-6 py-2 rounded-full font-medium text-gray-600 hover:text-primary transition-colors" data-category="pingpong">
+            乒乓球拍
+          </button>
+          <button class="category-btn px-6 py-2 rounded-full font-medium text-gray-600 hover:text-primary transition-colors" data-category="badminton">
+            羽毛球拍
+          </button>
+        </div>
+      </div>
+      
+      <!-- 商品列表 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 乒乓球拍商品 1 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="pingpong">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1058/400/300" alt="专业乒乓球拍" class="w-full h-64 object-cover">
+            <div class="absolute top-4 right-4 bg-primary text-white text-sm font-medium px-3 py-1 rounded-full">
+              热销
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">专业级碳纤维乒乓球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-half-o"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.8)</span>
+            </div>
+            <p class="text-gray-600 mb-4">高弹性碳纤维材质，适合专业选手，控球精准，击球有力</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹1,299</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹1,599</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="pingpong-1">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 乒乓球拍商品 2 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="pingpong">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1059/400/300" alt="入门级乒乓球拍" class="w-full h-64 object-cover">
+            <div class="absolute top-4 right-4 bg-secondary text-white text-sm font-medium px-3 py-1 rounded-full">
+              新品
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">入门级训练乒乓球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.2)</span>
+            </div>
+            <p class="text-gray-600 mb-4">适合初学者，握感舒适，弹性适中，价格实惠</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹699</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹899</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="pingpong-2">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 羽毛球拍商品 1 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="badminton">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1061/400/300" alt="专业羽毛球拍" class="w-full h-64 object-cover">
+            <div class="absolute top-4 right-4 bg-primary text-white text-sm font-medium px-3 py-1 rounded-full">
+              热销
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">专业进攻型羽毛球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.9)</span>
+            </div>
+            <p class="text-gray-600 mb-4">高模量碳纤维，平衡点优化，适合强力扣杀，专业选手首选</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹1,599</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹1,999</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="badminton-1">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 羽毛球拍商品 2 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="badminton">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1062/400/300" alt="全能型羽毛球拍" class="w-full h-64 object-cover">
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">全能型羽毛球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-half-o"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.6)</span>
+            </div>
+            <p class="text-gray-600 mb-4">攻守平衡，适合业余爱好者，耐用性强，手感舒适</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹999</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹1,299</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="badminton-2">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 乒乓球拍商品 3 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="pingpong">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1063/400/300" alt="高级乒乓球拍" class="w-full h-64 object-cover">
+            <div class="absolute top-4 right-4 bg-accent text-dark text-sm font-medium px-3 py-1 rounded-full">
+              限量
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">高级定制乒乓球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(5.0)</span>
+            </div>
+            <p class="text-gray-600 mb-4">可定制重量和平衡点，顶级材质，专业选手定制款</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹2,499</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹2,999</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="pingpong-3">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 羽毛球拍商品 3 -->
+        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden card-hover fade-in" data-category="badminton">
+          <div class="relative">
+            <img src="https://picsum.photos/id/1064/400/300" alt="儿童羽毛球拍" class="w-full h-64 object-cover">
+            <div class="absolute top-4 right-4 bg-secondary text-white text-sm font-medium px-3 py-1 rounded-full">
+              儿童款
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">儿童专用羽毛球拍</h3>
+            <div class="flex items-center mb-3">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.3)</span>
+            </div>
+            <p class="text-gray-600 mb-4">轻量化设计，适合8-12岁儿童，安全耐用，颜色鲜艳</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-primary font-bold text-xl">₹599</span>
+                <span class="text-gray-400 line-through ml-2 text-sm">₹799</span>
+              </div>
+              <button class="view-details-btn bg-primary/10 text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/20 transition-colors" data-product="badminton-3">
+                查看详情
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 商品详情模态框 -->
+  <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 invisible transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+      <div class="relative p-6">
+        <button id="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl">
+          <i class="fa fa-times"></i>
+        </button>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="product-images">
+            <img id="modalProductImage" src="https://picsum.photos/id/1058/600/400" alt="商品详情图" class="w-full h-80 object-cover rounded-lg">
+            <div class="flex gap-3 mt-4 overflow-x-auto pb-2">
+              <img src="https://picsum.photos/id/1058/100/100" alt="商品缩略图" class="w-20 h-20 object-cover rounded-md border-2 border-primary cursor-pointer">
+              <img src="https://picsum.photos/id/1059/100/100" alt="商品缩略图" class="w-20 h-20 object-cover rounded-md border-2 border-transparent hover:border-primary cursor-pointer">
+              <img src="https://picsum.photos/id/1060/100/100" alt="商品缩略图" class="w-20 h-20 object-cover rounded-md border-2 border-transparent hover:border-primary cursor-pointer">
+            </div>
+          </div>
+          
+          <div class="product-info">
+            <h3 id="modalProductTitle" class="text-2xl font-bold mb-2">专业级碳纤维乒乓球拍</h3>
+            <div class="flex items-center mb-4">
+              <div class="flex text-accent">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-half-o"></i>
+              </div>
+              <span class="text-gray-500 ml-2 text-sm">(4.8 · 126 评价)</span>
+            </div>
+            <div class="mb-4">
+              <span id="modalProductPrice" class="text-primary font-bold text-2xl">₹1,299</span>
+              <span class="text-gray-400 line-through ml-2 text-lg">₹1,599</span>
+              <span class="ml-2 text-green-600 font-medium">节省 ₹300</span>
+            </div>
+            <div class="border-t border-b border-gray-100 py-4 mb-4">
+              <h4 class="font-semibold mb-2">商品特点：</h4>
+              <ul id="modalProductFeatures" class="list-disc list-inside text-gray-600 space-y-1">
+                <li>高弹性碳纤维材质，强度高重量轻</li>
+                <li>专业级橡胶面，控球精准，旋转强劲</li>
+                <li> ergonomic 手柄设计，握感舒适</li>
+                <li>适合中级到高级选手使用</li>
+                <li>附赠拍套和保护膜</li>
+              </ul>
+            </div>
+            <div class="mb-6">
+              <h4 class="font-semibold mb-2">规格参数：</h4>
+              <div id="modalProductSpecs" class="grid grid-cols-2 gap-2 text-gray-600">
+                <div>重量：约180g</div>
+                <div>拍面大小：160x152mm</div>
+                <div>手柄类型：直拍/横拍可选</div>
+                <div>材质：碳纤维+环氧树脂</div>
+                <div>适合人群：专业选手</div>
+                <div>质保期：1年</div>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a href="#contact" class="btn-primary text-center">
+                联系商家
+              </a>
+              <button class="border-2 border-primary text-primary px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-primary/10">
+                <i class="fa fa-shopping-cart mr-2"></i>加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关于我们 -->
+  <section id="about" class="py-16 bg-batik bg-secondary/5">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="md:w-1/2 fade-in">
+          <img src="https://picsum.photos/id/1071/600/400" alt="关于我们" class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover">
+        </div>
+        <div class="md:w-1/2 fade-in" style="transition-delay: 0.2s;">
+          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-6">关于 SPORTS HUB</h2>
+          <p class="text-gray-700 text-lg mb-4">
+            SPORTS HUB 是东南亚领先的体育用品供应商，专注于提供高品质的球拍类产品。我们深知东南亚运动员的需求，致力于为不同水平的运动员提供专业、耐用、性价比高的运动装备。
+          </p>
+          <p class="text-gray-700 text-lg mb-6">
+            我们的产品经过严格的质量检测，采用先进的生产工艺和优质材料，确保每一款球拍都能满足运动员的专业需求。无论你是初学者还是专业选手，都能在我们这里找到适合你的装备。
+          </p>
+          <div class="grid grid-cols-2 gap-6 mb-8">
+            <div class="flex items-start">
+              <i class="fa fa-check-circle text-primary text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-bold text-lg mb-1">优质材料</h4>
+                <p class="text-gray-600">采用进口碳纤维等高品质材料</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <i class="fa fa-check-circle text-primary text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-bold text-lg mb-1">专业设计</h4>
+                <p class="text-gray-600">结合人体工学，提升使用体验</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <i class="fa fa-check-circle text-primary text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-bold text-lg mb-1">品质保证</h4>
+                <p class="text-gray-600">严格质检，1年质保服务</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <i class="fa fa-check-circle text-primary text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-bold text-lg mb-1">本地服务</h4>
+                <p class="text-gray-600">东南亚本地配送，快速响应</p>
+              </div>
+            </div>
+          </div>
+          <a href="#contact" class="btn-primary inline-block">
+            了解更多
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 联系我们 -->
+  <section id="contact" class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 fade-in">
+        <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-4">联系我们</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">有任何问题或需求，欢迎随时联系我们，我们将竭诚为你服务</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- 联系表单 -->
+        <div class="bg-white rounded-xl shadow-lg p-8 fade-in">
+          <h3 class="text-2xl font-bold mb-6">在线咨询</h3>
+          <form id="contactForm" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label for="name" class="block text-gray-700 font-medium mb-2">姓名</label>
+                <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="请输入你的姓名">
+              </div>
+              <div>
+                <label for="email" class="block text-gray-700 font-medium mb-2">邮箱</label>
+                <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="请输入你的邮箱">
+              </div>
+            </div>
+            <div>
+              <label for="phone" class="block text-gray-700 font-medium mb-2">电话</label>
+              <input type="tel" id="phone" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="请输入你的电话">
+            </div>
+            <div>
+              <label for="product" class="block text-gray-700 font-medium mb-2">感兴趣的商品</label>
+              <select id="product" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                <option value="">请选择商品</option>
+                <option value="pingpong">乒乓球拍系列</option>
+                <option value="badminton">羽毛球拍系列</option>
+                <option value="other">其他商品</option>
+              </select>
+            </div>
+            <div>
+              <label for="message" class="block text-gray-700 font-medium mb-2">留言内容</label>
+              <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="请输入你的留言内容"></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-full">
+              发送留言
+            </button>
+          </form>
+        </div>
+        
+        <!-- 联系信息 -->
+        <div class="flex flex-col justify-between fade-in" style="transition-delay: 0.2s;">
+          <div>
+            <h3 class="text-2xl font-bold mb-6">联系方式</h3>
+            <div class="space-y-6">
+              <div class="flex items-start">
+                <div class="bg-primary/10 rounded-full p-3 mr-4">
+                  <i class="fa fa-map-marker text-primary text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">地址</h4>
+                  <p class="text-gray-600">新加坡芽笼路123号，体育中心大厦5楼</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-primary/10 rounded-full p-3 mr-4">
+                  <i class="fa fa-phone text-primary text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">电话</h4>
+                  <p class="text-gray-600">+65 1234 5678</p>
+                  <p class="text-gray-600">+62 812 3456 7890</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-primary/10 rounded-full p-3 mr-4">
+                  <i class="fa fa-envelope text-primary text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">邮箱</h4>
+                  <p class="text-gray-600">info@sportshub.com</p>
+                  <p class="text-gray-600">support@sportshub.com</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-primary/10 rounded-full p-3 mr-4">
+                  <i class="fa fa-clock-o text-primary text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">营业时间</h4>
+                  <p class="text-gray-600">周一至周五: 9:00 - 18:00</p>
+                  <p class="text-gray-600">周六: 10:00 - 16:00</p>
+                  <p class="text-gray-600">周日: 休息</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-10">
+              <h4 class="font-bold text-lg mb-4">关注我们</h4>
+              <div class="flex space-x-4">
+                <a href="#" class="bg-primary/10 hover:bg-primary/20 text-primary rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                  <i class="fa fa-facebook"></i>
+                </a>
+                <a href="#" class="bg-primary/10 hover:bg-primary/20 text-primary rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                  <i class="fa fa-instagram"></i>
+                </a>
+                <a href="#" class="bg-primary/10 hover:bg-primary/20 text-primary rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                  <i class="fa fa-twitter"></i>
+                </a>
+                <a href="#" class="bg-primary/10 hover:bg-primary/20 text-primary rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                  <i class="fa fa-whatsapp"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 地图 -->
+          <div class="mt-10 rounded-xl overflow-hidden shadow-lg h-[250px]">
+            <img src="https://picsum.photos/id/1031/800/400" alt="地图位置" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <i class="fa fa-bolt text-primary text-2xl"></i>
+            <span class="text-xl font-bold text-white">SPORTS HUB</span>
+          </div>
+          <p class="text-gray-400 mb-6">
+            东南亚专业体育用品供应商，为你提供高品质的球拍类产品和优质服务。
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-whatsapp"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-bold mb-6">快速链接</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
+            <li><a href="#products" class="text-gray-400 hover:text-primary transition-colors">商品分类</a></li>
+            <li><a href="#about" class="text-gray-400 hover:text-primary transition-colors">关于我们</a></li>
+            <li><a href="#contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">常见问题</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">配送政策</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-bold mb-6">商品分类</h4>
+          <ul class="space-y-3">
+            <li><a href="#pingpong" class="text-gray-400 hover:text-primary transition-colors">乒乓球拍</a></li>
+            <li><a href="#badminton" class="text-gray-400 hover:text-primary transition-colors">羽毛球拍</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">球拍配件</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">运动服装</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">训练器材</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">定制服务</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-bold mb-6">订阅通讯</h4>
+          <p class="text-gray-400 mb-4">
+            订阅我们的通讯，及时获取最新产品信息和优惠活动
+          </p>
+          <form class="flex">
+            <input type="email" placeholder="你的邮箱地址" class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-dark">
+            <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-400 text-sm mb-4 md:mb-0">
+          &copy; 2024 SPORTS HUB. 保留所有权利。
+        </p>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-primary text-sm transition-colors">隐私政策</a>
+          <a href="#" class="text-gray-400 hover:text-primary text-sm transition-colors">使用条款</a>
+          <a href="#" class="text-gray-400 hover:text-primary text-sm transition-colors">退款政策</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    const backToTop = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'shadow-md');
+        navbar.classList.remove('py-3', 'shadow-sm');
+        
+        if (window.scrollY > 300) {
+          backToTop.classList.remove('opacity-0', 'invisible');
+          backToTop.classList.add('opacity-100', 'visible');
+        } else {
+          backToTop.classList.add('opacity-0', 'invisible');
+          backToTop.classList.remove('opacity-100', 'visible');
+        }
+      } else {
+        navbar.classList.add('py-3', 'shadow-sm');
+        navbar.classList.remove('py-2', 'shadow-md');
+      }
+      
+      // 滚动动画
+      const fadeElements = document.querySelectorAll('.fade-in');
+      fadeElements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+        if (elementTop < window.innerHeight - elementVisible) {
+          element.classList.add('visible');
+        }
+      });
+    });
+    
+    // 返回顶部
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // 移动端菜单
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    menuBtn.addEventListener('click', () => {
+      if (mobileMenu.classList.contains('invisible')) {
+        mobileMenu.classList.remove('invisible', 'opacity-0', '-translate-y-full');
+        mobileMenu.classList.add('visible', 'opacity-100', 'translate-y-0');
+        menuBtn.innerHTML = '<i class="fa fa-times"></i>';
+      } else {
+        mobileMenu.classList.add('invisible', 'opacity-0', '-translate-y-full');
+        mobileMenu.classList.remove('visible', 'opacity-100', 'translate-y-0');
+        menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+      }
+    });
+    
+    // 商品分类筛选
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const productCards = document.querySelectorAll('.product-card');
+    
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // 更新按钮样式
+        categoryBtns.forEach(b => {
+          b.classList.remove('active', 'bg-white', 'shadow-sm', 'text-primary');
+          b.classList.add('text-gray-600');
+        });
+        btn.classList.add('active', 'bg-white', 'shadow-sm', 'text-primary');
+        btn.classList.remove('text-gray-600');
+        
+        // 筛选商品
+        const category = btn.getAttribute('data-category');
+        productCards.forEach(card => {
+          if (category === 'all' || card.getAttribute('data-category') === category) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+    
+    // 商品详情模态框
+    const productModal = document.getElementById('productModal');
+    const closeModal = document.getElementById('closeModal');
+    const viewDetailsBtns = document.querySelectorAll('.view-details-btn');
+    
+    viewDetailsBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        productModal.classList.remove('opacity-0', 'invisible');
+        productModal.classList.add('opacity-100', 'visible');
+        document.body.style.overflow = 'hidden';
+        
+        // 可以根据商品ID加载不同的商品详情
+        const productId = btn.getAttribute('data-product');
+        // 这里可以添加加载不同商品详情的逻辑
+      });
+    });
+    
+    closeModal.addEventListener('click', () => {
+      productModal.classList.add('opacity-0', 'invisible');
+      productModal.classList.remove('opacity-100', 'visible');
+      document.body.style.overflow = '';
+    });
+    
+    // 点击模态框背景关闭
+    productModal.addEventListener('click', (e) => {
+      if (e.target === productModal) {
+        productModal.classList.add('opacity-0', 'invisible');
+        productModal.classList.remove('opacity-100', 'visible');
+        document.body.style.overflow = '';
+      }
+    });
+    
+    // 联系表单提交
+    const contactForm = document.getElementById('contactForm');
+    
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // 简单的表单验证
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message').value;
+      
+      if (!name || !email || !message) {
+        alert('请填写所有必填字段');
+        return;
+      }
+      
+      // 模拟表单提交
+      alert('留言发送成功！我们将尽快与你联系');
+      contactForm.reset();
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // 关闭移动端菜单
+          if (!mobileMenu.classList.contains('invisible')) {
+            mobileMenu.classList.add('invisible', 'opacity-0', '-translate-y-full');
+            mobileMenu.classList.remove('visible', 'opacity-100', 'translate-y-0');
+            menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+          }
+        }
+      });
+    });
+    
+    // 初始化页面时触发一次滚动事件，以显示初始可见的动画元素
+    window.dispatchEvent(new Event('scroll'));
+  </script>
+</body>
+</html>
