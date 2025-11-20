@@ -5,6 +5,8 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Prisma 需要 openssl
+  PRISMA_CLI_BINARY_TARGETS = "native,rhel-openssl-1.0.x"
 
 [[redirects]]
   from = "/api/*"
