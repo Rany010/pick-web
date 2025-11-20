@@ -158,21 +158,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { mockProducts } from '../../data/mockProducts'
+import { getProductDetail, getProductsList } from '../../api/products'
 
 const route = useRoute()
 const productId = parseInt(route.params.id)
 
-const product = computed(() => {
-  return mockProducts.find(p => p.id === productId)
-})
-
-const selectedImage = ref(product.value?.images?.[0] || product.value?.image)
+const product = ref(null)
+const relatedProductsData = ref([])
+const loading = ref(false)
+const error = ref(null)
+const selectedImage = ref('')
 
 const badgeColor = computed(() => {
   if (!product.value?.badge) return ''
@@ -191,15 +191,67 @@ const badgeColor = computed(() => {
 })
 
 const relatedProducts = computed(() => {
-  if (!product.value) return []
-  return mockProducts
-    .filter(p => p.category === product.value.category && p.id !== product.value.id)
-    .slice(0, 3)
+  return relatedProductsData.value
 })
 
 const formatSpecKey = (key) => {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 }
+
+// Transform API response to component format
+const transformProduct = (p) => ({
+  id: p.id,
+  name: p.nameEn,
+  slug: p.slug,
+  category: p.category.slug,
+  description: p.description,
+  price: Number(p.price),
+  originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+  rating: Number(p.rating),
+  reviewCount: p.reviewCount,
+  badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+  image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
+  images: p.images.map(img => img.imageUrl),
+  features: p.features || [],
+  specifications: p.specifications || {},
+  stock: p.stock,
+  isFeatured: p.isFeatured,
+  isNew: p.isNew
+})
+
+// Load product
+const loadProduct = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await getProductDetail(productId)
+    product.value = transformProduct(response)
+    selectedImage.value = product.value.images[0] || product.value.image
+    
+    // Load related products
+    const relatedResponse = await getProductsList(product.value.category, 4, 0)
+    relatedProductsData.value = relatedResponse.products
+      .filter(p => p.id !== productId)
+      .slice(0, 3)
+      .map(transformProduct)
+  } catch (err) {
+    error.value = err.message
+    console.error('加载商品详情失败:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadProduct()
+})
+
+// Watch route changes
+watch(() => route.params.id, () => {
+  if (route.params.id) {
+    loadProduct()
+  }
+})
 </script>
 
 <style scoped>

@@ -55,20 +55,79 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { mockProducts, mockCategories } from '../../data/mockProducts'
+import { getProductsList, getCategoriesList } from '../../api/products'
 
 const selectedCategory = ref('all')
-const categories = mockCategories
+const categories = ref([{ id: 'all', name: 'All Products', slug: 'all' }])
+const products = ref([])
+const loading = ref(false)
+const error = ref(null)
 
 const filteredProducts = computed(() => {
   if (selectedCategory.value === 'all') {
-    return mockProducts
+    return products.value
   }
-  return mockProducts.filter(p => p.category === selectedCategory.value)
+  return products.value.filter(p => p.category === selectedCategory.value)
+})
+
+// Load categories
+const loadCategories = async () => {
+  try {
+    const response = await getCategoriesList()
+    const apiCategories = response.map(c => ({
+      id: c.slug,
+      name: c.nameEn,
+      slug: c.slug
+    }))
+    categories.value = [
+      { id: 'all', name: 'All Products', slug: 'all' },
+      ...apiCategories
+    ]
+  } catch (err) {
+    console.error('加载分类失败:', err)
+  }
+}
+
+// Load products
+const loadProducts = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await getProductsList('all', 100, 0)
+    products.value = response.products.map(p => ({
+      id: p.id,
+      name: p.nameEn,
+      slug: p.slug,
+      category: p.category.slug,
+      description: p.description,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+      rating: Number(p.rating),
+      reviewCount: p.reviewCount,
+      badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+      image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
+      images: p.images.map(img => img.imageUrl),
+      features: p.features || [],
+      specifications: p.specifications || {},
+      stock: p.stock,
+      isFeatured: p.isFeatured,
+      isNew: p.isNew
+    }))
+  } catch (err) {
+    error.value = err.message
+    console.error('加载商品失败:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  await loadCategories()
+  await loadProducts()
 })
 </script>
 

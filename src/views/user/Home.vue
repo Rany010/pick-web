@@ -260,7 +260,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { mockProducts } from '../../data/mockProducts'
+import { getProductsList } from '../../api/products'
 
 // Form data
 const form = ref({
@@ -271,10 +271,49 @@ const form = ref({
   message: ''
 })
 
+// Products data
+const products = ref([])
+const loading = ref(false)
+const error = ref(null)
+
 // Featured products (only show products with isFeatured: true)
 const featuredProducts = computed(() => {
-  return mockProducts.filter(p => p.isFeatured).slice(0, 3)
+  return products.value.filter(p => p.isFeatured).slice(0, 3)
 })
+
+// Load products
+const loadProducts = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await getProductsList('all', 100, 0)
+    // Transform API response to match component props
+    products.value = response.products.map(p => ({
+      id: p.id,
+      name: p.nameEn,
+      slug: p.slug,
+      category: p.category.slug,
+      description: p.description,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+      rating: Number(p.rating),
+      reviewCount: p.reviewCount,
+      badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+      image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
+      images: p.images.map(img => img.imageUrl),
+      features: p.features || [],
+      specifications: p.specifications || {},
+      stock: p.stock,
+      isFeatured: p.isFeatured,
+      isNew: p.isNew
+    }))
+  } catch (err) {
+    error.value = err.message
+    console.error('加载商品失败:', err)
+  } finally {
+    loading.value = false
+  }
+}
 
 // Back to top button
 const showBackToTop = ref(false)
@@ -312,10 +351,12 @@ const handleSubmit = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   // Trigger initial animation
   handleScroll()
+  // Load products
+  await loadProducts()
 })
 
 onUnmounted(() => {
