@@ -18,6 +18,12 @@ export const handler = async (event, context) => {
 
   try {
     console.log('📦 开始查询测试商品数据...')
+    console.log('🔍 Prisma 对象状态:', prisma ? '已初始化' : '未初始化')
+    console.log('🔍 DATABASE_URL 存在:', process.env.DATABASE_URL ? '是' : '否')
+    
+    if (!prisma) {
+      throw new Error('Prisma Client 未正确初始化')
+    }
 
     // 从数据库查询测试商品
     const products = await prisma.testProduct.findMany({
