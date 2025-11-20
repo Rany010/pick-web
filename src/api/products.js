@@ -1,8 +1,12 @@
 import axios from 'axios'
 
+// 开发环境使用 Netlify 线上 API，生产环境使用相对路径
+const isDev = import.meta.env.DEV
+const baseURL = isDev ? 'https://pick-web.netlify.app/api' : '/api'
+
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   timeout: 10000,
 })
 

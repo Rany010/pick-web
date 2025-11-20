@@ -3,6 +3,7 @@ import Home from '../views/user/Home.vue'
 import Products from '../views/user/Products.vue'
 import ProductDetail from '../views/user/ProductDetail.vue'
 import TestPage from '../views/TestPage.vue'
+import InitData from '../views/admin/InitData.vue'
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/test',
     name: 'Test',
     component: TestPage,
+  },
+  {
+    path: '/admin/init',
+    name: 'InitData',
+    component: InitData,
   },
 ]
 
