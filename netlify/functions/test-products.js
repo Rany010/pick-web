@@ -19,10 +19,17 @@ export const handler = async (event, context) => {
   try {
     console.log('📦 开始查询测试商品数据...')
     console.log('🔍 Prisma 对象状态:', prisma ? '已初始化' : '未初始化')
+    console.log('🔍 Prisma 对象类型:', typeof prisma)
+    console.log('🔍 Prisma 对象的键:', prisma ? Object.keys(prisma).slice(0, 10) : '无')
+    console.log('🔍 testProduct 存在:', prisma && prisma.testProduct ? '是' : '否')
     console.log('🔍 DATABASE_URL 存在:', process.env.DATABASE_URL ? '是' : '否')
     
     if (!prisma) {
       throw new Error('Prisma Client 未正确初始化')
+    }
+    
+    if (!prisma.testProduct) {
+      throw new Error('Prisma Client 中没有 testProduct 模型。可用模型: ' + Object.keys(prisma).filter(k => k[0] === k[0].toLowerCase()).join(', '))
     }
 
     // 从数据库查询测试商品
