@@ -1,5 +1,8 @@
-import prisma from './utils/db.js'
+import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
+
+// 处理 ES 模块导入问题
+const prisma = prismaModule.default || prismaModule
 
 /**
  * 获取测试商品数据
