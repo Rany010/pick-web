@@ -194,31 +194,15 @@
       </div>
     </div>
 
-    <!-- Product Form Modal (simplified for now) -->
-    <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal"></div>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-              {{ editingProduct ? 'Edit Product' : 'Add Product' }}
-            </h3>
-            <p class="text-sm text-gray-500">
-              Product form functionality will be implemented in the next phase. For now, use the data initialization page.
-            </p>
-          </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              @click="closeModal"
-              type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Product Form Modal -->
+    <ProductForm
+      v-if="showModal"
+      :product="editingProduct"
+      :categories="categories"
+      :loading="submitting"
+      @close="closeModal"
+      @submit="handleSubmit"
+    />
   </AdminLayout>
 </template>
 
@@ -226,13 +210,15 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
-import { getProducts, getCategories, deleteProductById } from '@/api/admin'
+import ProductForm from '@/components/admin/ProductForm.vue'
+import { getProducts, getCategories, deleteProductById, createProduct, updateProduct } from '@/api/admin'
 
 const router = useRouter()
 
 const products = ref([])
 const categories = ref([])
 const loading = ref(false)
+const submitting = ref(false)
 const totalProducts = ref(0)
 const showModal = ref(false)
 const editingProduct = ref(null)
@@ -338,6 +324,34 @@ const deleteProduct = async (product) => {
   } catch (error) {
     console.error('Failed to delete product:', error)
     alert('Failed to delete product')
+  }
+}
+
+const handleSubmit = async (productData) => {
+  submitting.value = true
+  
+  try {
+    let response
+    if (editingProduct.value) {
+      // 更新商品
+      response = await updateProduct(editingProduct.value.id, productData)
+    } else {
+      // 创建新商品
+      response = await createProduct(productData)
+    }
+
+    if (response.success) {
+      alert(editingProduct.value ? 'Product updated successfully!' : 'Product created successfully!')
+      closeModal()
+      await loadProducts()
+    } else {
+      alert('Failed to save product: ' + response.error)
+    }
+  } catch (error) {
+    console.error('Failed to save product:', error)
+    alert('Failed to save product')
+  } finally {
+    submitting.value = false
   }
 }
 </script>

@@ -90,9 +90,47 @@ export const handler = async (event, context) => {
       }
     })
 
-    console.log(`✅ 成功更新商品: ${product.nameEn}`)
+    // 如果提供了图片数据，更新图片
+    if (data.images && Array.isArray(data.images)) {
+      // 删除现有图片
+      await prisma.productImage.deleteMany({
+        where: { productId: productId }
+      })
 
-    return success(product, '商品更新成功')
+      // 创建新图片记录
+      await Promise.all(
+        data.images.map((img, index) =>
+          prisma.productImage.create({
+            data: {
+              productId: productId,
+              imageUrl: img.imageUrl,
+              thumbnailUrl: img.thumbnailUrl || null,
+              altText: img.altText || product.nameEn,
+              sortOrder: index,
+              isPrimary: index === 0
+            }
+          })
+        )
+      )
+    }
+
+    // 重新获取商品以包含更新后的图片
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        category: true,
+        images: true,
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    })
+
+    console.log(`✅ 成功更新商品: ${updatedProduct.nameEn}`)
+
+    return success(updatedProduct, '商品更新成功')
   } catch (err) {
     console.error('❌ 更新商品失败:', err)
     return error(
