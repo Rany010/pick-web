@@ -4,8 +4,11 @@ import Products from '../views/user/Products.vue'
 import ProductDetail from '../views/user/ProductDetail.vue'
 import TestPage from '../views/TestPage.vue'
 import InitData from '../views/admin/InitData.vue'
+import AdminLogin from '../views/admin/AdminLogin.vue'
+import ProductManage from '../views/admin/ProductManage.vue'
 
 const routes = [
+  // 用户端路由
   {
     path: '/',
     name: 'Home',
@@ -25,6 +28,18 @@ const routes = [
     path: '/test',
     name: 'Test',
     component: TestPage,
+  },
+  // 管理员路由
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: AdminLogin,
+  },
+  {
+    path: '/admin/products',
+    name: 'ProductManage',
+    component: ProductManage,
+    meta: { requiresAuth: true }
   },
   {
     path: '/admin/init',
@@ -48,6 +63,20 @@ const router = createRouter({
       return { top: 0 }
     }
   },
+})
+
+// 路由守卫 - 检查管理员认证
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('admin_token')
+    if (!token) {
+      next('/admin/login')
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
 })
 
 export default router
