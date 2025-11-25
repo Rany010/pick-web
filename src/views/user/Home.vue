@@ -1,46 +1,14 @@
 <template>
   <div class="min-h-screen bg-light">
-    <!-- 绝对定位测试元素 -->
-    <div style="position: fixed; top: 60px; left: 10px; z-index: 99999; background: red; color: white; padding: 10px; font-size: 16px; border: 2px solid black;">
-      🚨 测试渲染：Banner ID {{ activeBanner?.id || 'null' }}
-    </div>
-    
     <Navbar />
     
     <!-- Hero Section -->
-    <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10" style="min-height: 500px; background: #f0f0f0 !important;">
-      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center" style="background: rgba(255,255,255,0.9); min-height: 400px; border: 2px solid #ccc;">
-        <div class="md:w-1/2 fade-in opacity-100 translate-y-0" style="background: rgba(0,255,0,0.2); min-height: 300px; border: 3px solid green;">
-          <!-- 强制显示的测试内容 -->
-          <div style="position: absolute; top: 150px; left: 50px; background: orange; color: black; padding: 20px; z-index: 99999; font-size: 18px; font-weight: bold;">
-            🎯 BANNER 测试: {{ activeBanner ? activeBanner.title : 'NO BANNER' }}
-          </div>
-          
-          <!-- 调试信息 -->
-          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded" style="position: relative; z-index: 9999; background: yellow !important; color: black !important;">
-            <p><strong>🐛 调试信息:</strong></p>
-            <p>banners.length = {{ banners.length }}</p>
-            <p>activeBanner = {{ activeBanner ? 'exists' : 'null' }}</p>
-            <p v-if="activeBanner">activeBanner.id = {{ activeBanner.id }}</p>
-            <p v-if="activeBanner">activeBanner.title = {{ activeBanner.title }}</p>
-            <p v-if="activeBanner">activeBanner.subtitle = {{ activeBanner.subtitle || 'empty' }}</p>
-            <p v-if="activeBanner">activeBanner.imageUrl = {{ activeBanner.imageUrl ? 'exists' : 'empty' }}</p>
-            <p>loading = {{ loading }}</p>
-            <p>error = {{ error || 'none' }}</p>
-            <p><strong>测试计数器:</strong> {{ Date.now() }}</p>
-            <button @click="testBannerData" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">
-              🔍 测试 Banner 数据
-            </button>
-          </div>
+    <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
+      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 fade-in opacity-100 translate-y-0">
           
           <template v-if="activeBanner">
-            <!-- 强制可见的测试标题 -->
-            <div class="bg-green-200 p-4 mb-4 border border-green-500 rounded" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
-              <p class="text-black font-bold" style="color: black !important;">✅ Banner 数据已加载！ID: {{ activeBanner.id }}</p>
-              <p class="text-black" style="color: black !important;">标题: {{ activeBanner.title }}</p>
-            </div>
-            
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4" style="color: #000 !important; background: #fff !important; padding: 10px;">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
               {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
               <span class="text-primary" v-if="activeBanner.subtitle">{{ activeBanner.subtitle }}</span>
               <span class="text-primary" v-else>Elevate Your Game</span>
@@ -348,22 +316,9 @@ const featuredProducts = computed(() => {
 
 // Active Banners
 const activeBanner = computed(() => {
-  console.log('🔄 计算 activeBanner, banners.value.length:', banners.value.length)
-  console.log('🔄 banners.value 原始数据:', banners.value)
-  
   if (banners.value.length > 0) {
-    const firstBanner = banners.value[0]
-    console.log('🔄 第一个 Banner 详细信息:', {
-      id: firstBanner?.id,
-      title: firstBanner?.title,
-      subtitle: firstBanner?.subtitle,
-      imageUrl: firstBanner?.imageUrl?.substring(0, 100) + '...',
-      isActive: firstBanner?.isActive,
-      hasAllFields: !!(firstBanner?.title && firstBanner?.imageUrl)
-    })
-    return firstBanner // 暂时只显示第一个 Banner，后续可以做轮播
+    return banners.value[0] // 暂时只显示第一个 Banner，后续可以做轮播
   }
-  console.log('🔄 没有 Banner 数据，返回 null')
   return null
 })
 
@@ -396,47 +351,12 @@ const loadData = async () => {
 
     // Load Banners
     const bannersRes = await getBanners()
-    console.log('📦 API 返回的 Banners:', {
-      success: bannersRes.success,
-      message: bannersRes.message,
-      dataCount: bannersRes.data?.length || 0
-    })
     
     if (bannersRes.success) {
       banners.value = bannersRes.data
-      console.log('🖼️ 设置到 Vue 状态的 Banners 数量:', banners.value.length)
-      
-      // 只显示 Banner 的基本信息，不显示完整的 base64 图片数据
-      if (banners.value.length > 0) {
-        const bannerInfo = banners.value.map(banner => ({
-          id: banner.id,
-          title: banner.title,
-          subtitle: banner.subtitle,
-          hasImage: !!banner.imageUrl,
-          imageType: banner.imageUrl?.startsWith('data:') ? 'base64' : 'url',
-          linkUrl: banner.linkUrl,
-          isActive: banner.isActive
-        }))
-        console.log('🎯 Banner 信息概览:', bannerInfo)
-        console.log('🎯 当前激活的 Banner ID:', activeBanner.value?.id)
-        console.log('🎯 当前激活的 Banner 完整数据:', JSON.stringify(activeBanner.value, null, 2))
-        console.log('🎯 banners.value 数组:', banners.value)
-        
-        // 检查第一个 Banner 的详细信息
-        const firstBanner = banners.value[0]
-        if (firstBanner) {
-          console.log('🔍 第一个 Banner 详细信息:')
-          console.log('  - ID:', firstBanner.id)
-          console.log('  - Title:', firstBanner.title)
-          console.log('  - Subtitle:', firstBanner.subtitle)
-          console.log('  - ImageUrl:', firstBanner.imageUrl?.substring(0, 100) + '...')
-          console.log('  - IsActive:', firstBanner.isActive)
-          console.log('  - LinkUrl:', firstBanner.linkUrl)
-          console.log('  - ButtonText:', firstBanner.buttonText)
-        }
-      }
+      console.log('✅ 成功加载', banners.value.length, '个 Banner')
     } else {
-      console.warn('⚠️ 获取 Banners 失败或未成功:', bannersRes)
+      console.warn('⚠️ 获取 Banners 失败:', bannersRes.message || 'Unknown error')
     }
   } catch (err) {
     error.value = err.message
@@ -489,55 +409,18 @@ const handleImageError = (event) => {
 }
 
 const handleImageLoad = (event) => {
-  console.log('🖼️ Banner 图片加载成功:', event.target.src?.substring(0, 100) + '...')
-}
-
-const testBannerData = () => {
-  console.log('🧪 测试 Banner 数据:')
-  console.log('  - banners.value:', banners.value)
-  console.log('  - banners.value.length:', banners.value.length)
-  console.log('  - activeBanner.value:', activeBanner.value)
-  console.log('  - typeof activeBanner.value:', typeof activeBanner.value)
-  
-  if (activeBanner.value) {
-    console.log('  - activeBanner 详细信息:')
-    Object.keys(activeBanner.value).forEach(key => {
-      console.log(`    ${key}:`, activeBanner.value[key])
-    })
-  }
-  
-  // 强制触发重新渲染
-  const testDiv = document.createElement('div')
-  testDiv.innerHTML = `<h1 style="color: red; font-size: 24px;">测试渲染: ${activeBanner.value?.title || 'No Title'}</h1>`
-  testDiv.style.position = 'fixed'
-  testDiv.style.top = '100px'
-  testDiv.style.left = '50px'
-  testDiv.style.zIndex = '10000'
-  testDiv.style.background = 'white'
-  testDiv.style.padding = '10px'
-  testDiv.style.border = '2px solid red'
-  document.body.appendChild(testDiv)
-  
-  setTimeout(() => {
-    document.body.removeChild(testDiv)
-  }, 3000)
+  console.log('🖼️ Banner 图片加载成功')
 }
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   
-  // Load products and banners first
+  // Load products and banners
   await loadData()
   
-  // Force trigger initial animation after data is loaded
+  // Trigger initial animation
   setTimeout(() => {
     handleScroll()
-    // Also force show all fade-in elements immediately
-    const fadeElements = document.querySelectorAll('.fade-in')
-    fadeElements.forEach(element => {
-      element.classList.add('opacity-100', 'translate-y-0')
-      element.classList.remove('opacity-0', 'translate-y-10')
-    })
   }, 100)
 })
 

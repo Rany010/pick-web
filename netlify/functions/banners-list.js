@@ -54,9 +54,6 @@ export const handler = async (event, context) => {
       }
     }
 
-    console.log('🔍 Banner 查询条件:', JSON.stringify(where, null, 2))
-    console.log('🔍 是否为管理员:', isAdmin)
-    
     const banners = await prisma.banner.findMany({
       where,
       orderBy: {
@@ -64,16 +61,7 @@ export const handler = async (event, context) => {
       }
     })
 
-    console.log('📊 查询到的 Banner 数量:', banners.length)
-    if (banners.length > 0) {
-      console.log('📊 第一个 Banner:', {
-        id: banners[0].id,
-        title: banners[0].title,
-        isActive: banners[0].isActive,
-        startDate: banners[0].startDate,
-        endDate: banners[0].endDate
-      })
-    }
+    console.log(`📊 返回 ${banners.length} 个 Banner${isAdmin ? '（管理员视图）' : '（用户视图）'}`)
 
     return success(banners)
   } catch (err) {
