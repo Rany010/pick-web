@@ -199,3 +199,23 @@ export const createCategory = async (categoryData) => {
   }
 }
 
+/**
+ * 上传图片
+ */
+export const uploadImage = async (imageData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE}/upload-image`,
+      imageData,
+      authConfig()
+    )
+    return response.data
+  } catch (error) {
+    console.error('Upload image error:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Failed to upload image' 
+    }
+  }
+}
+

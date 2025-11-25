@@ -150,49 +150,70 @@
                 <p class="mt-1 text-xs text-gray-500">Enter each feature on a new line</p>
               </div>
 
-              <!-- Image Upload -->
+              <!-- Product Images -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Product Image
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images
                 </label>
                 
-                <!-- 图片预览 -->
-                <div v-if="imagePreview" class="mb-3">
-                  <img :src="imagePreview" alt="Preview" class="w-32 h-32 object-cover rounded-lg border" />
-                  <button
-                    type="button"
-                    @click="clearImage"
-                    class="mt-2 text-sm text-red-600 hover:text-red-800"
-                  >
-                    Remove Image
-                  </button>
+                <!-- Upload Button -->
+                <div class="flex items-center space-x-4 mb-3">
+                  <label class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{{ uploading ? 'Uploading...' : 'Upload Images' }}</span>
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      class="hidden"
+                      @change="handleFileSelect"
+                      :disabled="uploading"
+                    />
+                  </label>
+                  <span class="text-xs text-gray-500">
+                    {{ productImages.length }}/5 images
+                  </span>
                 </div>
 
-                <!-- 文件上传按钮 -->
-                <div class="flex gap-2">
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept="image/*"
-                    @change="handleImageSelect"
-                    class="hidden"
-                  />
-                  <button
-                    type="button"
-                    @click="$refs.fileInput.click()"
-                    :disabled="uploadingImage"
-                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                <!-- Image Previews -->
+                <div v-if="productImages.length > 0" class="grid grid-cols-3 gap-3">
+                  <div
+                    v-for="(img, index) in productImages"
+                    :key="index"
+                    class="relative group"
                   >
-                    {{ uploadingImage ? 'Uploading...' : 'Choose Image' }}
-                  </button>
-                  <input
-                    v-model="imageUrl"
-                    type="url"
-                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
-                    placeholder="Or paste image URL"
-                  />
+                    <img
+                      :src="img.imageUrl"
+                      :alt="`Product image ${index + 1}`"
+                      class="w-full h-24 object-cover rounded-lg border-2"
+                      :class="index === 0 ? 'border-orange-500' : 'border-gray-200'"
+                    />
+                    <!-- Primary Badge -->
+                    <span
+                      v-if="index === 0"
+                      class="absolute top-1 left-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded"
+                    >
+                      Primary
+                    </span>
+                    <!-- Delete Button -->
+                    <button
+                      type="button"
+                      @click="removeImage(index)"
+                      class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-                <p class="mt-1 text-xs text-gray-500">Upload an image or paste a URL (placeholder will be used if empty)</p>
+                
+                <p class="mt-2 text-xs text-gray-500">
+                  Upload up to 5 images. First image will be the primary image. Supported formats: JPG, PNG, WEBP (Max 5MB each)
+                </p>
               </div>
 
               <!-- Status -->
@@ -370,7 +391,9 @@ const form = ref({
 })
 
 const featuresText = ref('')
-const imageUrl = ref('')
+const productImages = ref([])
+const uploading = ref(false)
+const fileInput = ref(null)
 
 // 创建分类相关
 const showCategoryModal = ref(false)
@@ -403,9 +426,14 @@ watch(() => props.product, (product) => {
       featuresText.value = product.features.join('\n')
     }
     
-    // 获取主图
+    // 获取商品图片
     if (product.images && product.images.length > 0) {
-      imageUrl.value = product.images[0].imageUrl
+      productImages.value = product.images.map(img => ({
+        imageUrl: img.imageUrl,
+        altText: img.altText || product.nameEn
+      }))
+    } else {
+      productImages.value = []
     }
   } else {
     // 重置表单
@@ -423,9 +451,101 @@ watch(() => props.product, (product) => {
       isNew: false
     }
     featuresText.value = ''
-    imageUrl.value = ''
+    productImages.value = []
   }
 }, { immediate: true })
+
+// 处理文件选择
+const handleFileSelect = async (event) => {
+  const files = Array.from(event.target.files)
+  
+  if (files.length === 0) return
+  
+  // 检查图片数量限制
+  if (productImages.value.length + files.length > 5) {
+    alert('You can only upload up to 5 images')
+    return
+  }
+  
+  // 检查文件大小和类型
+  for (const file of files) {
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+      alert(`File "${file.name}" is too large. Maximum size is 5MB`)
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      alert(`File "${file.name}" is not a valid image`)
+      return
+    }
+  }
+  
+  uploading.value = true
+  
+  try {
+    // 上传每个文件
+    for (const file of files) {
+      const base64 = await fileToBase64(file)
+      
+      // 调用上传接口
+      const response = await uploadImage({
+        image: base64,
+        fileName: file.name,
+        mimeType: file.type
+      })
+      
+      if (response.success) {
+        productImages.value.push({
+          imageUrl: response.data.imageUrl,
+          altText: form.value.nameEn || 'Product image'
+        })
+      } else {
+        alert(`Failed to upload ${file.name}: ${response.error}`)
+      }
+    }
+  } catch (error) {
+    console.error('Upload error:', error)
+    alert('Failed to upload images')
+  } finally {
+    uploading.value = false
+    // 清空文件输入
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+  }
+}
+
+// 文件转 Base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// 上传图片到服务器
+const uploadImage = async (imageData) => {
+  try {
+    const token = localStorage.getItem('admin_token')
+    const response = await fetch('/.netlify/functions/upload-image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(imageData)
+    })
+    return await response.json()
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+// 删除图片
+const removeImage = (index) => {
+  productImages.value.splice(index, 1)
+}
 
 const handleSubmit = () => {
   // 处理 features
@@ -448,12 +568,9 @@ const handleSubmit = () => {
     submitData.id = props.product.id
   }
 
-  // 如果有图片 URL，添加图片数据
-  if (imageUrl.value) {
-    submitData.images = [{
-      imageUrl: imageUrl.value,
-      altText: form.value.nameEn
-    }]
+  // 添加图片数据
+  if (productImages.value.length > 0) {
+    submitData.images = productImages.value
   }
 
   emit('submit', submitData)
