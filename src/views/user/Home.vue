@@ -6,25 +6,53 @@
     <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2 fade-in">
-          <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
-            Premium Pickleball Equipment,<br>
-            <span class="text-primary">Elevate Your Game</span>
-          </h1>
-          <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
-            Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4">
-            <router-link to="/products" class="btn-primary text-center">
-              Shop Now
-            </router-link>
-            <a href="#about" class="btn-secondary text-center">
-              Learn More
-            </a>
-          </div>
+          <template v-if="activeBanner">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
+              {{ activeBanner.title }}<br>
+              <span class="text-primary" v-if="activeBanner.subtitle">{{ activeBanner.subtitle }}</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
+              Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <router-link 
+                :to="activeBanner.linkUrl || '/products'" 
+                class="btn-primary text-center"
+              >
+                {{ activeBanner.buttonText || 'Shop Now' }}
+              </router-link>
+              <a href="#about" class="btn-secondary text-center">
+                Learn More
+              </a>
+            </div>
+          </template>
+          
+          <template v-else>
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
+              Premium Pickleball Equipment,<br>
+              <span class="text-primary">Elevate Your Game</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
+              Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <router-link to="/products" class="btn-primary text-center">
+                Shop Now
+              </router-link>
+              <a href="#about" class="btn-secondary text-center">
+                Learn More
+              </a>
+            </div>
+          </template>
         </div>
+        
         <div class="md:w-1/2 mt-12 md:mt-0 fade-in" style="transition-delay: 0.2s;">
           <div class="relative">
-            <img src="https://picsum.photos/seed/hero/600/400" alt="Pickleball Equipment" class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]">
+            <img 
+              :src="activeBanner ? activeBanner.imageUrl : 'https://picsum.photos/seed/hero/600/400'" 
+              alt="Pickleball Equipment" 
+              class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]"
+            >
             <div class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3">
               <p class="font-bold text-lg">Special Offer</p>
               <p class="text-sm">Up to 20% OFF</p>
@@ -260,7 +288,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { getProductsList } from '../../api/products'
+import { getProductsList, getBanners } from '../../api/products'
 
 // Form data
 const form = ref({
@@ -271,8 +299,9 @@ const form = ref({
   message: ''
 })
 
-// Products data
+// Products and Banners data
 const products = ref([])
+const banners = ref([])
 const loading = ref(false)
 const error = ref(null)
 
@@ -281,14 +310,22 @@ const featuredProducts = computed(() => {
   return products.value.filter(p => p.isFeatured).slice(0, 3)
 })
 
-// Load products
-const loadProducts = async () => {
+// Active Banners
+const activeBanner = computed(() => {
+  if (banners.value.length > 0) {
+    return banners.value[0] // 暂时只显示第一个 Banner，后续可以做轮播
+  }
+  return null
+})
+
+// Load data
+const loadData = async () => {
   loading.value = true
   error.value = null
   try {
-    const response = await getProductsList('all', 100, 0)
-    // Transform API response to match component props
-    products.value = response.products.map(p => ({
+    // Load Products
+    const productsRes = await getProductsList('all', 100, 0)
+    products.value = productsRes.products.map(p => ({
       id: p.id,
       name: p.nameEn,
       slug: p.slug,
@@ -299,7 +336,7 @@ const loadProducts = async () => {
       rating: Number(p.rating),
       reviewCount: p.reviewCount,
       badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-      image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
+      image: p.images[0]?.imageUrl || '/placeholder-product.svg',
       images: p.images.map(img => img.imageUrl),
       features: p.features || [],
       specifications: p.specifications || {},
@@ -307,9 +344,15 @@ const loadProducts = async () => {
       isFeatured: p.isFeatured,
       isNew: p.isNew
     }))
+
+    // Load Banners
+    const bannersRes = await getBanners()
+    if (bannersRes.success) {
+      banners.value = bannersRes.data
+    }
   } catch (err) {
     error.value = err.message
-    console.error('加载商品失败:', err)
+    console.error('加载数据失败:', err)
   } finally {
     loading.value = false
   }
@@ -355,8 +398,8 @@ onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   // Trigger initial animation
   handleScroll()
-  // Load products
-  await loadProducts()
+  // Load products and banners
+  await loadData()
 })
 
 onUnmounted(() => {

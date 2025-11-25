@@ -1,85 +1,56 @@
 import axios from 'axios'
 
-// 开发环境使用 Netlify 线上 API，生产环境使用相对路径
-const isDev = import.meta.env.DEV
-const baseURL = isDev ? 'https://pick-web.netlify.app/api' : '/api'
+const API_BASE = '/.netlify/functions'
 
-// 创建 axios 实例
-const api = axios.create({
-  baseURL,
-  timeout: 10000,
-})
-
-// 响应拦截器
-api.interceptors.response.use(
-  (response) => {
-    return response.data
-  },
-  (error) => {
-    const message = error.response?.data?.error || error.message || '请求失败'
-    return Promise.reject(new Error(message))
-  }
-)
-
-/**
- * 获取商品列表
- * @param {string} category - 分类 slug (all, paddles, balls, accessories)
- * @param {number} limit - 限制数量
- * @param {number} offset - 偏移量
- */
-export const getProductsList = async (category = 'all', limit = 100, offset = 0) => {
+export const getProductsList = async (category = 'all', limit = 10, offset = 0) => {
   try {
-    const response = await api.get('/products-list', {
-      params: { category, limit, offset }
+    const response = await axios.get(`${API_BASE}/products-list`, {
+      params: {
+        category,
+        limit,
+        offset
+      }
     })
-    return response.data
+    return response.data.data
   } catch (error) {
-    console.error('获取商品列表失败:', error)
+    console.error('Failed to fetch products:', error)
     throw error
   }
 }
 
-/**
- * 获取商品详情
- * @param {number|string} idOrSlug - 商品 ID 或 slug
- */
-export const getProductDetail = async (idOrSlug) => {
+export const getProductDetail = async (slugOrId) => {
   try {
-    const params = typeof idOrSlug === 'number' 
-      ? { id: idOrSlug } 
-      : { slug: idOrSlug }
-    
-    const response = await api.get('/product-detail', { params })
-    return response.data
+    const response = await axios.get(`${API_BASE}/product-detail`, {
+      params: {
+        id: slugOrId
+      }
+    })
+    return response.data.data
   } catch (error) {
-    console.error('获取商品详情失败:', error)
+    console.error('Failed to fetch product detail:', error)
     throw error
   }
 }
 
-/**
- * 获取分类列表
- */
 export const getCategoriesList = async () => {
   try {
-    const response = await api.get('/categories-list')
-    return response.data
+    const response = await axios.get(`${API_BASE}/categories-list`)
+    return response.data.data
   } catch (error) {
-    console.error('获取分类列表失败:', error)
+    console.error('Failed to fetch categories:', error)
     throw error
   }
 }
 
 /**
- * 初始化数据（仅用于首次部署）
+ * 获取 Banner 列表 (无需认证)
  */
-export const seedData = async () => {
+export const getBanners = async () => {
   try {
-    const response = await api.post('/seed-data')
+    const response = await axios.get(`${API_BASE}/banners-list`)
     return response.data
   } catch (error) {
-    console.error('初始化数据失败:', error)
-    throw error
+    console.error('Failed to fetch banners:', error)
+    return { success: false, data: [] }
   }
 }
-
