@@ -6,6 +6,7 @@ import TestPage from '../views/TestPage.vue'
 import InitData from '../views/admin/InitData.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import ProductManage from '../views/admin/ProductManage.vue'
+import BannerManage from '../views/admin/BannerManage.vue'
 
 const routes = [
   // 用户端路由
@@ -39,6 +40,12 @@ const routes = [
     path: '/admin/products',
     name: 'ProductManage',
     component: ProductManage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/banners',
+    name: 'BannerManage',
+    component: BannerManage,
     meta: { requiresAuth: true }
   },
   {

@@ -219,3 +219,75 @@ export const uploadImage = async (imageData) => {
   }
 }
 
+/**
+ * 获取 Banner 列表
+ */
+export const getBanners = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/banners-list`, authConfig())
+    return response.data
+  } catch (error) {
+    console.error('Get banners error:', error)
+    return { success: false, error: 'Failed to load banners' }
+  }
+}
+
+/**
+ * 创建 Banner
+ */
+export const createBanner = async (bannerData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE}/admin-banner-create`,
+      bannerData,
+      authConfig()
+    )
+    return response.data
+  } catch (error) {
+    console.error('Create banner error:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Failed to create banner' 
+    }
+  }
+}
+
+/**
+ * 更新 Banner
+ */
+export const updateBanner = async (id, bannerData) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE}/admin-banner-update`,
+      { id, ...bannerData },
+      authConfig()
+    )
+    return response.data
+  } catch (error) {
+    console.error('Update banner error:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Failed to update banner' 
+    }
+  }
+}
+
+/**
+ * 删除 Banner
+ */
+export const deleteBanner = async (id) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE}/admin-banner-delete?id=${id}`,
+      authConfig()
+    )
+    return response.data
+  } catch (error) {
+    console.error('Delete banner error:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Failed to delete banner' 
+    }
+  }
+}
+
