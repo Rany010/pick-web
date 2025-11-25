@@ -12,104 +12,104 @@
         </button>
       </div>
 
-    <!-- Banner List -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul role="list" class="divide-y divide-gray-200">
-        <li v-for="banner in banners" :key="banner.id" class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center flex-1 min-w-0">
-              <div class="flex-shrink-0 h-24 w-40 relative rounded overflow-hidden bg-gray-100 border border-gray-200">
-                <img
-                  v-if="banner.imageUrl"
-                  :src="banner.imageUrl"
-                  :alt="banner.title"
-                  class="h-full w-full object-cover"
-                />
-                <div v-else class="flex items-center justify-center h-full text-gray-400">
-                  No Image
-                </div>
-              </div>
-              <div class="ml-4 flex-1">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg font-medium text-orange-600 truncate">{{ banner.title }}</h3>
-                  <div class="ml-2 flex-shrink-0 flex">
-                    <span
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                      :class="banner.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    >
-                      {{ banner.isActive ? 'Active' : 'Inactive' }}
-                    </span>
+      <!-- Banner List -->
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul role="list" class="divide-y divide-gray-200">
+          <li v-for="banner in banners" :key="banner.id" class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center flex-1 min-w-0">
+                <div class="flex-shrink-0 h-24 w-40 relative rounded overflow-hidden bg-gray-100 border border-gray-200">
+                  <img
+                    v-if="banner.imageUrl"
+                    :src="banner.imageUrl"
+                    :alt="banner.title"
+                    class="h-full w-full object-cover"
+                  />
+                  <div v-else class="flex items-center justify-center h-full text-gray-400">
+                    No Image
                   </div>
                 </div>
-                <div class="mt-2 flex justify-between">
-                  <div class="sm:flex">
-                    <p class="flex items-center text-sm text-gray-500">
-                      Order: {{ banner.sortOrder }}
-                    </p>
-                    <p v-if="banner.linkUrl" class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6 truncate max-w-xs">
-                      Link: {{ banner.linkUrl }}
-                    </p>
+                <div class="ml-4 flex-1">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-orange-600 truncate">{{ banner.title }}</h3>
+                    <div class="ml-2 flex-shrink-0 flex">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        :class="banner.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                      >
+                        {{ banner.isActive ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
                   </div>
-                  <div class="flex items-center space-x-4 text-sm">
-                    <button
-                      @click="openModal(banner)"
-                      class="font-medium text-indigo-600 hover:text-indigo-900"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      @click="handleDelete(banner)"
-                      class="font-medium text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
+                  <div class="mt-2 flex justify-between">
+                    <div class="sm:flex">
+                      <p class="flex items-center text-sm text-gray-500">
+                        Order: {{ banner.sortOrder }}
+                      </p>
+                      <p v-if="banner.linkUrl" class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6 truncate max-w-xs">
+                        Link: {{ banner.linkUrl }}
+                      </p>
+                    </div>
+                    <div class="flex items-center space-x-4 text-sm">
+                      <button
+                        @click="openModal(banner)"
+                        class="font-medium text-indigo-600 hover:text-indigo-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        @click="handleDelete(banner)"
+                        class="font-medium text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </li>
-        <li v-if="banners.length === 0" class="px-4 py-12 text-center text-gray-500">
-          No banners found. Create one to get started.
-        </li>
-      </ul>
-    </div>
+          </li>
+          <li v-if="banners.length === 0" class="px-4 py-12 text-center text-gray-500">
+            No banners found. Create one to get started.
+          </li>
+        </ul>
+      </div>
 
-    <!-- Banner Modal -->
-    <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
+      <!-- Banner Modal -->
+      <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
 
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form @submit.prevent="handleSubmit">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
-                {{ isEdit ? 'Edit Banner' : 'Add New Banner' }}
-              </h3>
-              
-              <div class="space-y-4">
-                <!-- Title -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Title <span class="text-red-500">*</span></label>
-                  <input
-                    v-model="form.title"
-                    type="text"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                    placeholder="e.g., Summer Sale"
-                  />
-                </div>
+          <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form @submit.prevent="handleSubmit">
+              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                  {{ isEdit ? 'Edit Banner' : 'Add New Banner' }}
+                </h3>
+                
+                <div class="space-y-4">
+                  <!-- Title -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Title <span class="text-red-500">*</span></label>
+                    <input
+                      v-model="form.title"
+                      type="text"
+                      required
+                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                      placeholder="e.g., Summer Sale"
+                    />
+                  </div>
 
-                <!-- Subtitle -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Subtitle</label>
-                  <input
-                    v-model="form.subtitle"
-                    type="text"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                    placeholder="Up to 50% off"
+                  <!-- Subtitle -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Subtitle</label>
+                    <input
+                      v-model="form.subtitle"
+                      type="text"
+                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                      placeholder="Up to 50% off"
                   />
                 </div>
 
@@ -211,6 +211,7 @@
         </div>
       </div>
     </div>
+  </div>
   </AdminLayout>
 </template>
 
@@ -364,4 +365,3 @@ onMounted(() => {
   fetchBanners()
 })
 </script>
-
