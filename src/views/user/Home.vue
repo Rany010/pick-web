@@ -1,13 +1,23 @@
 <template>
   <div class="min-h-screen bg-light">
+    <!-- 绝对定位测试元素 -->
+    <div style="position: fixed; top: 60px; left: 10px; z-index: 99999; background: red; color: white; padding: 10px; font-size: 16px; border: 2px solid black;">
+      🚨 测试渲染：Banner ID {{ activeBanner?.id || 'null' }}
+    </div>
+    
     <Navbar />
     
     <!-- Hero Section -->
     <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10" style="min-height: 500px; background: #f0f0f0 !important;">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center" style="background: rgba(255,255,255,0.9); min-height: 400px; border: 2px solid #ccc;">
-        <div class="md:w-1/2 fade-in">
+        <div class="md:w-1/2 fade-in opacity-100 translate-y-0" style="background: rgba(0,255,0,0.2); min-height: 300px; border: 3px solid green;">
+          <!-- 强制显示的测试内容 -->
+          <div style="position: absolute; top: 150px; left: 50px; background: orange; color: black; padding: 20px; z-index: 99999; font-size: 18px; font-weight: bold;">
+            🎯 BANNER 测试: {{ activeBanner ? activeBanner.title : 'NO BANNER' }}
+          </div>
+          
           <!-- 调试信息 -->
-          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded" style="position: relative; z-index: 9999;">
+          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded" style="position: relative; z-index: 9999; background: yellow !important; color: black !important;">
             <p><strong>🐛 调试信息:</strong></p>
             <p>banners.length = {{ banners.length }}</p>
             <p>activeBanner = {{ activeBanner ? 'exists' : 'null' }}</p>
@@ -25,9 +35,9 @@
           
           <template v-if="activeBanner">
             <!-- 强制可见的测试标题 -->
-            <div class="bg-green-200 p-4 mb-4 border border-green-500 rounded">
-              <p class="text-black font-bold">✅ Banner 数据已加载！ID: {{ activeBanner.id }}</p>
-              <p class="text-black">标题: {{ activeBanner.title }}</p>
+            <div class="bg-green-200 p-4 mb-4 border border-green-500 rounded" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+              <p class="text-black font-bold" style="color: black !important;">✅ Banner 数据已加载！ID: {{ activeBanner.id }}</p>
+              <p class="text-black" style="color: black !important;">标题: {{ activeBanner.title }}</p>
             </div>
             
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4" style="color: #000 !important; background: #fff !important; padding: 10px;">
@@ -70,7 +80,7 @@
           </template>
         </div>
         
-        <div class="md:w-1/2 mt-12 md:mt-0 fade-in" style="transition-delay: 0.2s;">
+        <div class="md:w-1/2 mt-12 md:mt-0 fade-in opacity-100 translate-y-0" style="transition-delay: 0.2s;">
           <div class="relative">
             <img 
               :src="activeBanner ? activeBanner.imageUrl : 'https://picsum.photos/seed/hero/600/400'" 
@@ -515,10 +525,20 @@ const testBannerData = () => {
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
-  // Trigger initial animation
-  handleScroll()
-  // Load products and banners
+  
+  // Load products and banners first
   await loadData()
+  
+  // Force trigger initial animation after data is loaded
+  setTimeout(() => {
+    handleScroll()
+    // Also force show all fade-in elements immediately
+    const fadeElements = document.querySelectorAll('.fade-in')
+    fadeElements.forEach(element => {
+      element.classList.add('opacity-100', 'translate-y-0')
+      element.classList.remove('opacity-0', 'translate-y-10')
+    })
+  }, 100)
 })
 
 onUnmounted(() => {
