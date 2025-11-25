@@ -347,12 +347,30 @@ const loadData = async () => {
 
     // Load Banners
     const bannersRes = await getBanners()
-    console.log('📦 API 返回的 Banners:', bannersRes)
+    console.log('📦 API 返回的 Banners:', {
+      success: bannersRes.success,
+      message: bannersRes.message,
+      dataCount: bannersRes.data?.length || 0
+    })
     
     if (bannersRes.success) {
       banners.value = bannersRes.data
-      console.log('🖼️ 设置到 Vue 状态的 Banners:', banners.value)
-      console.log('🎯 当前激活的 Banner:', activeBanner.value)
+      console.log('🖼️ 设置到 Vue 状态的 Banners 数量:', banners.value.length)
+      
+      // 只显示 Banner 的基本信息，不显示完整的 base64 图片数据
+      if (banners.value.length > 0) {
+        const bannerInfo = banners.value.map(banner => ({
+          id: banner.id,
+          title: banner.title,
+          subtitle: banner.subtitle,
+          hasImage: !!banner.imageUrl,
+          imageType: banner.imageUrl?.startsWith('data:') ? 'base64' : 'url',
+          linkUrl: banner.linkUrl,
+          isActive: banner.isActive
+        }))
+        console.log('🎯 Banner 信息概览:', bannerInfo)
+        console.log('🎯 当前激活的 Banner ID:', activeBanner.value?.id)
+      }
     } else {
       console.warn('⚠️ 获取 Banners 失败或未成功:', bannersRes)
     }

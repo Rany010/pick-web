@@ -6,9 +6,9 @@ import { requireAuth } from './utils/auth.js'
  * POST /api/upload-image
  * 
  * 说明：
- * 1. 使用 Cloudinary 作为图片存储服务（推荐）
- * 2. 或使用 Netlify Blobs（备选方案）
- * 3. 本示例使用 base64 临时方案，实际部署时应配置 Cloudinary
+ * 1. 优先使用 Netlify Blobs 存储图片
+ * 2. 备选方案：Cloudinary（需要配置环境变量）
+ * 3. 最后回退：base64（仅用于开发调试）
  */
 export const handler = async (event, context) => {
   // 处理 OPTIONS 请求（CORS 预检）
@@ -55,7 +55,65 @@ export const handler = async (event, context) => {
     console.log(`📸 上传图片 - 文件名: ${fileName}`)
 
     // ============================================
-    // 方案 1: 使用 Cloudinary (推荐，需要配置)
+    // 方案 1: 优先使用 Netlify Blobs
+    // ============================================
+    try {
+      // 动态导入 @netlify/blobs
+      const { getStore } = await import('@netlify/blobs')
+      
+      // 获取存储实例 (store name: 'product-images')
+      const store = getStore('product-images')
+      
+      // 准备数据：从 base64 转换为 Buffer
+      // data:image/jpeg;base64,/9j/4AAQSkZJRgABA...
+      const matches = imageData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+      
+      let buffer
+      if (matches && matches.length === 3) {
+        // 如果有前缀，去掉前缀
+        mimeType = matches[1] || mimeType
+        buffer = Buffer.from(matches[2], 'base64')
+      } else {
+        // 如果没有前缀，直接转换
+        buffer = Buffer.from(imageData, 'base64')
+      }
+      
+      // 生成唯一文件名
+      const randomString = Math.random().toString(36).substring(2, 15)
+      const extension = mimeType.split('/')[1] || 'jpg'
+      const uniqueFileName = `${Date.now()}-${randomString}.${extension}`
+      
+      // 上传到 Netlify Blobs
+      await store.set(uniqueFileName, buffer, {
+        metadata: {
+          contentType: mimeType,
+          originalName: fileName,
+          uploadedAt: new Date().toISOString()
+        }
+      })
+
+      // 构造访问 URL
+      const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || 'http://localhost:8888'
+      const imageUrl = `${siteUrl}/.netlify/functions/get-image?key=${uniqueFileName}`
+      
+      console.log(`✅ Netlify Blobs 上传成功: ${uniqueFileName}`)
+
+      return success({
+        imageUrl: imageUrl,
+        thumbnailUrl: imageUrl, 
+        blobKey: uniqueFileName,
+        fileName: uniqueFileName,
+        storage: 'netlify-blobs',
+        mimeType: mimeType
+      }, '图片上传成功')
+      
+    } catch (blobError) {
+      console.warn('⚠️ Netlify Blobs 上传失败:', blobError)
+      // 继续尝试其他方案
+    }
+
+    // ============================================
+    // 方案 2: 使用 Cloudinary (需要配置环境变量)
     // ============================================
     if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
       const cloudinary = await import('cloudinary').then(m => m.v2)
@@ -98,77 +156,6 @@ export const handler = async (event, context) => {
       }
     }
 
-    // ============================================
-    // 方案 2: 使用 Netlify Blobs
-    // ============================================
-    try {
-      // 动态导入 @netlify/blobs
-      const { getStore } = await import('@netlify/blobs')
-      
-      // 获取存储实例 (store name: 'product-images')
-      // 注意：Netlify Functions 中会自动从环境变量获取 siteID 和 token
-      const store = getStore('product-images')
-      
-      // 准备数据：从 base64 转换为 Buffer
-      // data:image/jpeg;base64,/9j/4AAQSkZJRgABA...
-      const matches = imageData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
-      
-      let buffer
-      if (matches && matches.length === 3) {
-        // 如果有前缀，去掉前缀
-        mimeType = matches[1] || mimeType
-        buffer = Buffer.from(matches[2], 'base64')
-      } else {
-        // 如果没有前缀，直接转换
-        buffer = Buffer.from(imageData, 'base64')
-      }
-      
-      // 生成唯一文件名 (UUID 或者 时间戳)
-      // 使用简单的随机字符串避免文件名冲突
-      const randomString = Math.random().toString(36).substring(2, 15)
-      const extension = mimeType.split('/')[1] || 'jpg'
-      const uniqueFileName = `${Date.now()}-${randomString}.${extension}`
-      
-      // 上传到 Netlify Blobs
-      await store.set(uniqueFileName, buffer, {
-        metadata: {
-          contentType: mimeType,
-          originalName: fileName
-        }
-      })
-
-      // 构造访问 URL
-      // Netlify Blobs 目前没有直接的公共 URL，需要通过 Function 代理访问或 Edge Function
-      // 这里我们构建一个约定好的 URL 格式，前端可以通过另一个 Function 来获取图片
-      // 或者如果在 Netlify 部署环境中，可以使用相对路径
-      
-      // 临时方案：为了能在前端直接看到图片，我们还是需要一个读取图片的 API
-      // 但为了存储优化，我们返回 Blob Key
-      
-      // 注意：Netlify Blobs 的 URL 访问通常需要签名或通过 API 获取
-      // 简单起见，我们这里返回一个特殊的 URL 格式，后续需要实现一个 image-proxy function
-      // 或者使用 site_url/.netlify/functions/get-image?key=xxx
-      
-      // 在本地开发环境 (netlify dev)，process.env.URL 通常为空或 undefined，
-      // 默认为 http://localhost:8888
-      const siteUrl = process.env.URL || 'http://localhost:8888'
-      const imageUrl = `${siteUrl}/.netlify/functions/get-image?key=${uniqueFileName}`
-      
-      console.log(`✅ Netlify Blobs 上传成功: ${uniqueFileName}`)
-
-      return success({
-        imageUrl: imageUrl,
-        thumbnailUrl: imageUrl, 
-        blobKey: uniqueFileName,
-        fileName: uniqueFileName,
-        storage: 'netlify-blobs'
-      }, '图片上传成功')
-      
-    } catch (blobError) {
-      console.warn('⚠️ Netlify Blobs 上传失败或不可用:', blobError)
-      // 本地开发如果没有正确配置 Netlify 链接，Blobs 可能会失败
-      // 这种情况下回退到 Base64 方案
-    }
 
     // ============================================
     // 方案 3: 临时方案 - 返回 base64（仅用于开发）
