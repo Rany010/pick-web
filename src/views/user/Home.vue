@@ -3,11 +3,11 @@
     <Navbar />
     
     <!-- Hero Section -->
-    <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
-      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+    <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10" style="min-height: 500px; background: #f0f0f0 !important;">
+      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center" style="background: rgba(255,255,255,0.9); min-height: 400px; border: 2px solid #ccc;">
         <div class="md:w-1/2 fade-in">
           <!-- 调试信息 -->
-          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded">
+          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded" style="position: relative; z-index: 9999;">
             <p><strong>🐛 调试信息:</strong></p>
             <p>banners.length = {{ banners.length }}</p>
             <p>activeBanner = {{ activeBanner ? 'exists' : 'null' }}</p>
@@ -17,10 +17,20 @@
             <p v-if="activeBanner">activeBanner.imageUrl = {{ activeBanner.imageUrl ? 'exists' : 'empty' }}</p>
             <p>loading = {{ loading }}</p>
             <p>error = {{ error || 'none' }}</p>
+            <p><strong>测试计数器:</strong> {{ Date.now() }}</p>
+            <button @click="testBannerData" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+              🔍 测试 Banner 数据
+            </button>
           </div>
           
           <template v-if="activeBanner">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
+            <!-- 强制可见的测试标题 -->
+            <div class="bg-green-200 p-4 mb-4 border border-green-500 rounded">
+              <p class="text-black font-bold">✅ Banner 数据已加载！ID: {{ activeBanner.id }}</p>
+              <p class="text-black">标题: {{ activeBanner.title }}</p>
+            </div>
+            
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4" style="color: #000 !important; background: #fff !important; padding: 10px;">
               {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
               <span class="text-primary" v-if="activeBanner.subtitle">{{ activeBanner.subtitle }}</span>
               <span class="text-primary" v-else>Elevate Your Game</span>
@@ -329,9 +339,18 @@ const featuredProducts = computed(() => {
 // Active Banners
 const activeBanner = computed(() => {
   console.log('🔄 计算 activeBanner, banners.value.length:', banners.value.length)
+  console.log('🔄 banners.value 原始数据:', banners.value)
+  
   if (banners.value.length > 0) {
     const firstBanner = banners.value[0]
-    console.log('🔄 返回第一个 Banner:', firstBanner?.id, firstBanner?.title)
+    console.log('🔄 第一个 Banner 详细信息:', {
+      id: firstBanner?.id,
+      title: firstBanner?.title,
+      subtitle: firstBanner?.subtitle,
+      imageUrl: firstBanner?.imageUrl?.substring(0, 100) + '...',
+      isActive: firstBanner?.isActive,
+      hasAllFields: !!(firstBanner?.title && firstBanner?.imageUrl)
+    })
     return firstBanner // 暂时只显示第一个 Banner，后续可以做轮播
   }
   console.log('🔄 没有 Banner 数据，返回 null')
@@ -390,7 +409,7 @@ const loadData = async () => {
         }))
         console.log('🎯 Banner 信息概览:', bannerInfo)
         console.log('🎯 当前激活的 Banner ID:', activeBanner.value?.id)
-        console.log('🎯 当前激活的 Banner 完整数据:', activeBanner.value)
+        console.log('🎯 当前激活的 Banner 完整数据:', JSON.stringify(activeBanner.value, null, 2))
         console.log('🎯 banners.value 数组:', banners.value)
         
         // 检查第一个 Banner 的详细信息
@@ -461,6 +480,37 @@ const handleImageError = (event) => {
 
 const handleImageLoad = (event) => {
   console.log('🖼️ Banner 图片加载成功:', event.target.src?.substring(0, 100) + '...')
+}
+
+const testBannerData = () => {
+  console.log('🧪 测试 Banner 数据:')
+  console.log('  - banners.value:', banners.value)
+  console.log('  - banners.value.length:', banners.value.length)
+  console.log('  - activeBanner.value:', activeBanner.value)
+  console.log('  - typeof activeBanner.value:', typeof activeBanner.value)
+  
+  if (activeBanner.value) {
+    console.log('  - activeBanner 详细信息:')
+    Object.keys(activeBanner.value).forEach(key => {
+      console.log(`    ${key}:`, activeBanner.value[key])
+    })
+  }
+  
+  // 强制触发重新渲染
+  const testDiv = document.createElement('div')
+  testDiv.innerHTML = `<h1 style="color: red; font-size: 24px;">测试渲染: ${activeBanner.value?.title || 'No Title'}</h1>`
+  testDiv.style.position = 'fixed'
+  testDiv.style.top = '100px'
+  testDiv.style.left = '50px'
+  testDiv.style.zIndex = '10000'
+  testDiv.style.background = 'white'
+  testDiv.style.padding = '10px'
+  testDiv.style.border = '2px solid red'
+  document.body.appendChild(testDiv)
+  
+  setTimeout(() => {
+    document.body.removeChild(testDiv)
+  }, 3000)
 }
 
 onMounted(async () => {
