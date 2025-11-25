@@ -179,3 +179,23 @@ export const updateProductStatus = async (id, status) => {
   }
 }
 
+/**
+ * 创建分类
+ */
+export const createCategory = async (categoryData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE}/admin-category-create`,
+      categoryData,
+      authConfig()
+    )
+    return response.data
+  } catch (error) {
+    console.error('Create category error:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Failed to create category' 
+    }
+  }
+}
+

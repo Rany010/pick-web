@@ -202,6 +202,7 @@
       :loading="submitting"
       @close="closeModal"
       @submit="handleSubmit"
+      @category-created="handleCategoryCreated"
     />
   </AdminLayout>
 </template>
@@ -353,6 +354,11 @@ const handleSubmit = async (productData) => {
   } finally {
     submitting.value = false
   }
+}
+
+const handleCategoryCreated = (newCategory) => {
+  // 将新分类添加到列表中
+  categories.value.push(newCategory)
 }
 </script>
 
