@@ -47,7 +47,9 @@ export const getCategoriesList = async () => {
  */
 export const getBanners = async () => {
   try {
+    console.log('📡 发起获取 Banners 请求...')
     const response = await axios.get(`${API_BASE}/banners-list`)
+    console.log('📡 Banners API 原始响应:', response)
     return response.data
   } catch (error) {
     console.error('Failed to fetch banners:', error)

@@ -347,8 +347,14 @@ const loadData = async () => {
 
     // Load Banners
     const bannersRes = await getBanners()
+    console.log('📦 API 返回的 Banners:', bannersRes)
+    
     if (bannersRes.success) {
       banners.value = bannersRes.data
+      console.log('🖼️ 设置到 Vue 状态的 Banners:', banners.value)
+      console.log('🎯 当前激活的 Banner:', activeBanner.value)
+    } else {
+      console.warn('⚠️ 获取 Banners 失败或未成功:', bannersRes)
     }
   } catch (err) {
     error.value = err.message
