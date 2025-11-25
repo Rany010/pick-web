@@ -3,6 +3,7 @@ import Home from '../views/user/Home.vue'
 import Products from '../views/user/Products.vue'
 import ProductDetail from '../views/user/ProductDetail.vue'
 import TestPage from '../views/TestPage.vue'
+import TestBanner from '../views/TestBanner.vue'
 import InitData from '../views/admin/InitData.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import ProductManage from '../views/admin/ProductManage.vue'
@@ -29,6 +30,11 @@ const routes = [
     path: '/test',
     name: 'Test',
     component: TestPage,
+  },
+  {
+    path: '/test-banner',
+    name: 'TestBanner',
+    component: TestBanner,
   },
   // 管理员路由
   {

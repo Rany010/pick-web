@@ -6,10 +6,24 @@
     <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2 fade-in">
+          <!-- 调试信息 -->
+          <div class="mb-4 p-2 bg-yellow-100 text-xs border border-yellow-300 rounded">
+            <p><strong>🐛 调试信息:</strong></p>
+            <p>banners.length = {{ banners.length }}</p>
+            <p>activeBanner = {{ activeBanner ? 'exists' : 'null' }}</p>
+            <p v-if="activeBanner">activeBanner.id = {{ activeBanner.id }}</p>
+            <p v-if="activeBanner">activeBanner.title = {{ activeBanner.title }}</p>
+            <p v-if="activeBanner">activeBanner.subtitle = {{ activeBanner.subtitle || 'empty' }}</p>
+            <p v-if="activeBanner">activeBanner.imageUrl = {{ activeBanner.imageUrl ? 'exists' : 'empty' }}</p>
+            <p>loading = {{ loading }}</p>
+            <p>error = {{ error || 'none' }}</p>
+          </div>
+          
           <template v-if="activeBanner">
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
-              {{ activeBanner.title }}<br>
+              {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
               <span class="text-primary" v-if="activeBanner.subtitle">{{ activeBanner.subtitle }}</span>
+              <span class="text-primary" v-else>Elevate Your Game</span>
             </h1>
             <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
               Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
@@ -52,6 +66,8 @@
               :src="activeBanner ? activeBanner.imageUrl : 'https://picsum.photos/seed/hero/600/400'" 
               alt="Pickleball Equipment" 
               class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]"
+              @error="handleImageError"
+              @load="handleImageLoad"
             >
             <div class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3">
               <p class="font-bold text-lg">Special Offer</p>
@@ -312,9 +328,13 @@ const featuredProducts = computed(() => {
 
 // Active Banners
 const activeBanner = computed(() => {
+  console.log('🔄 计算 activeBanner, banners.value.length:', banners.value.length)
   if (banners.value.length > 0) {
-    return banners.value[0] // 暂时只显示第一个 Banner，后续可以做轮播
+    const firstBanner = banners.value[0]
+    console.log('🔄 返回第一个 Banner:', firstBanner?.id, firstBanner?.title)
+    return firstBanner // 暂时只显示第一个 Banner，后续可以做轮播
   }
+  console.log('🔄 没有 Banner 数据，返回 null')
   return null
 })
 
@@ -370,6 +390,21 @@ const loadData = async () => {
         }))
         console.log('🎯 Banner 信息概览:', bannerInfo)
         console.log('🎯 当前激活的 Banner ID:', activeBanner.value?.id)
+        console.log('🎯 当前激活的 Banner 完整数据:', activeBanner.value)
+        console.log('🎯 banners.value 数组:', banners.value)
+        
+        // 检查第一个 Banner 的详细信息
+        const firstBanner = banners.value[0]
+        if (firstBanner) {
+          console.log('🔍 第一个 Banner 详细信息:')
+          console.log('  - ID:', firstBanner.id)
+          console.log('  - Title:', firstBanner.title)
+          console.log('  - Subtitle:', firstBanner.subtitle)
+          console.log('  - ImageUrl:', firstBanner.imageUrl?.substring(0, 100) + '...')
+          console.log('  - IsActive:', firstBanner.isActive)
+          console.log('  - LinkUrl:', firstBanner.linkUrl)
+          console.log('  - ButtonText:', firstBanner.buttonText)
+        }
       }
     } else {
       console.warn('⚠️ 获取 Banners 失败或未成功:', bannersRes)
@@ -416,6 +451,16 @@ const handleSubmit = () => {
     product: '',
     message: ''
   }
+}
+
+const handleImageError = (event) => {
+  console.error('🖼️ Banner 图片加载失败:', event.target.src)
+  // 回退到默认图片
+  event.target.src = 'https://picsum.photos/seed/hero/600/400'
+}
+
+const handleImageLoad = (event) => {
+  console.log('🖼️ Banner 图片加载成功:', event.target.src?.substring(0, 100) + '...')
 }
 
 onMounted(async () => {
