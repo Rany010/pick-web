@@ -1,7 +1,8 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+  <AdminLayout>
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-gray-900">Banner Management</h1>
       <button
         @click="openModal()"
@@ -210,11 +211,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 import { getBanners, createBanner, updateBanner, deleteBanner, uploadImage } from '@/api/admin'
 
 const banners = ref([])

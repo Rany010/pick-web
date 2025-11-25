@@ -93,7 +93,7 @@
                   <div class="flex-shrink-0 h-12 w-12">
                     <img
                       class="h-12 w-12 rounded-lg object-cover"
-                      :src="product.images[0]?.imageUrl || 'https://via.placeholder.com/100'"
+                      :src="product.images[0]?.imageUrl || '/placeholder-product.svg'"
                       :alt="product.nameEn"
                     />
                   </div>
