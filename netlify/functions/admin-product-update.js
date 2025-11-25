@@ -133,6 +133,9 @@ export const handler = async (event, context) => {
     return success(updatedProduct, '商品更新成功')
   } catch (err) {
     console.error('❌ 更新商品失败:', err)
+    if (err.code) console.error('Error Code:', err.code)
+    if (err.meta) console.error('Error Meta:', err.meta)
+    
     return error(
       '更新商品失败',
       500,

@@ -105,6 +105,9 @@ export const handler = async (event, context) => {
     return success(product, '商品创建成功')
   } catch (err) {
     console.error('❌ 创建商品失败:', err)
+    if (err.code) console.error('Error Code:', err.code)
+    if (err.meta) console.error('Error Meta:', err.meta)
+
     return error(
       '创建商品失败',
       500,
