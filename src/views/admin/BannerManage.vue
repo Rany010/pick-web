@@ -3,14 +3,14 @@
     <div class="space-y-6">
       <!-- Header -->
       <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-900">Banner Management</h1>
-      <button
-        @click="openModal()"
-        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-      >
-        + Add New Banner
-      </button>
-    </div>
+        <h1 class="text-2xl font-bold text-gray-900">Banner Management</h1>
+        <button
+          @click="openModal()"
+          class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        >
+          + Add New Banner
+        </button>
+      </div>
 
     <!-- Banner List -->
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
