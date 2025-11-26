@@ -2,21 +2,18 @@
   <div class="min-h-screen bg-light">
     <Navbar />
     
-    <!-- Hero Section -->
+    <!-- Hero Section with Banner Carousel -->
     <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2">
           
           <template v-if="activeBanner">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4 transition-opacity duration-500">
               {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
-              <span class="text-primary" v-if="activeBanner.subtitle">{{ activeBanner.subtitle }}</span>
+              <span class="text-primary" v-if="bannerSubtitle">{{ bannerSubtitle }}</span>
               <span class="text-primary" v-else>Elevate Your Game</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
-              Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
               <router-link 
                 :to="activeBanner.linkUrl || '/products'" 
                 class="btn-primary text-center"
@@ -34,10 +31,7 @@
               Premium Pickleball Equipment,<br>
               <span class="text-primary">Elevate Your Game</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-lg">
-              Discover professional-grade pickleball paddles, balls, and accessories designed for players of all skill levels.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
               <router-link to="/products" class="btn-primary text-center">
                 Shop Now
               </router-link>
@@ -50,16 +44,65 @@
         
         <div class="md:w-1/2 mt-12 md:mt-0">
           <div class="relative">
-            <img 
-              :src="activeBanner?.imageUrl || 'https://picsum.photos/seed/hero/600/400'" 
-              alt="Pickleball Equipment" 
-              class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]"
-              @error="handleImageError"
-              @load="handleImageLoad"
+            <!-- Banner 图片轮播 -->
+            <div class="relative overflow-hidden rounded-xl shadow-2xl">
+              <transition name="banner-fade" mode="out-in">
+                <img 
+                  :key="currentBannerIndex"
+                  :src="activeBanner?.imageUrl || 'https://picsum.photos/seed/hero/600/400'" 
+                  alt="Pickleball Equipment" 
+                  class="w-full object-cover h-[300px] md:h-[400px]"
+                  @error="handleImageError"
+                  @load="handleImageLoad"
+                >
+              </transition>
+            </div>
+            
+            <!-- 轮播指示器 -->
+            <div v-if="banners.length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              <button 
+                v-for="(banner, index) in banners" 
+                :key="banner.id"
+                @click="goToBanner(index)"
+                :class="[
+                  'w-3 h-3 rounded-full transition-all duration-300',
+                  currentBannerIndex === index 
+                    ? 'bg-primary w-8' 
+                    : 'bg-white/70 hover:bg-white'
+                ]"
+                :aria-label="`Go to banner ${index + 1}`"
+              />
+            </div>
+            
+            <!-- 左右箭头 -->
+            <template v-if="banners.length > 1">
+              <button 
+                @click="prevBanner"
+                class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
+                aria-label="Previous banner"
+              >
+                <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <button 
+                @click="nextBanner"
+                class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
+                aria-label="Next banner"
+              >
+                <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </template>
+            
+            <!-- 折扣标签 - 使用 subtitle 字段，格式如 "标题文字|Special Offer|20% OFF" -->
+            <div 
+              v-if="bannerPromoTag"
+              class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3"
             >
-            <div class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3">
-              <p class="font-bold text-lg">Special Offer</p>
-              <p class="text-sm">Up to 20% OFF</p>
+              <p class="font-bold text-lg">{{ bannerPromoTag.title }}</p>
+              <p class="text-sm">{{ bannerPromoTag.discount }}</p>
             </div>
           </div>
         </div>
@@ -323,17 +366,75 @@ const featuredProducts = computed(() => {
   return products.value.filter(p => p.isFeatured).slice(0, 3)
 })
 
-// Active Banners
+// Banner 轮播相关
+const currentBannerIndex = ref(0)
+let bannerInterval = null
+
+// 当前显示的 Banner
 const activeBanner = computed(() => {
-  console.log('🔍 [Home] activeBanner 计算, banners:', banners.value)
   if (banners.value.length > 0) {
-    const banner = banners.value[0]
-    console.log('🔍 [Home] 使用 Banner:', banner)
-    return banner
+    return banners.value[currentBannerIndex.value]
   }
-  console.log('🔍 [Home] 没有可用的 Banner')
   return null
 })
+
+// 解析折扣标签 - subtitle 格式支持 "副标题|促销标题|折扣内容"
+// 例如: "Elevate Your Game|Special Offer|Up to 20% OFF"
+const bannerPromoTag = computed(() => {
+  if (!activeBanner.value?.subtitle) return null
+  const parts = activeBanner.value.subtitle.split('|')
+  if (parts.length >= 3) {
+    return {
+      title: parts[1].trim(),
+      discount: parts[2].trim()
+    }
+  }
+  return null
+})
+
+// 获取显示的副标题（去掉折扣标签部分）
+const bannerSubtitle = computed(() => {
+  if (!activeBanner.value?.subtitle) return null
+  const parts = activeBanner.value.subtitle.split('|')
+  return parts[0].trim()
+})
+
+// 切换到下一个 Banner
+const nextBanner = () => {
+  if (banners.value.length > 1) {
+    currentBannerIndex.value = (currentBannerIndex.value + 1) % banners.value.length
+  }
+}
+
+// 切换到上一个 Banner
+const prevBanner = () => {
+  if (banners.value.length > 1) {
+    currentBannerIndex.value = (currentBannerIndex.value - 1 + banners.value.length) % banners.value.length
+  }
+}
+
+// 跳转到指定 Banner
+const goToBanner = (index) => {
+  currentBannerIndex.value = index
+  resetBannerInterval()
+}
+
+// 重置自动轮播定时器
+const resetBannerInterval = () => {
+  if (bannerInterval) {
+    clearInterval(bannerInterval)
+  }
+  startBannerInterval()
+}
+
+// 启动自动轮播
+const startBannerInterval = () => {
+  if (banners.value.length > 1) {
+    bannerInterval = setInterval(() => {
+      nextBanner()
+    }, 5000) // 每5秒切换
+  }
+}
 
 // Load data - 并行加载，优化性能
 const loadData = async () => {
@@ -470,6 +571,9 @@ onMounted(async () => {
   // Load products and banners
   await loadData()
   
+  // 启动 Banner 自动轮播
+  startBannerInterval()
+  
   // Trigger initial animation
   setTimeout(() => {
     handleScroll()
@@ -478,6 +582,10 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  // 清理定时器
+  if (bannerInterval) {
+    clearInterval(bannerInterval)
+  }
 })
 </script>
 
@@ -492,6 +600,17 @@ onUnmounted(() => {
 
 .btn-secondary {
   @apply bg-secondary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-secondary/90 hover:shadow-lg transform hover:-translate-y-0.5;
+}
+
+/* Banner 轮播过渡动画 */
+.banner-fade-enter-active,
+.banner-fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.banner-fade-enter-from,
+.banner-fade-leave-to {
+  opacity: 0;
 }
 </style>
 
