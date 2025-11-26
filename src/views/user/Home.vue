@@ -5,7 +5,7 @@
     <!-- Hero Section -->
     <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
-        <div class="md:w-1/2 fade-in opacity-100 translate-y-0">
+        <div class="md:w-1/2">
           
           <template v-if="activeBanner">
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
@@ -48,10 +48,10 @@
           </template>
         </div>
         
-        <div class="md:w-1/2 mt-12 md:mt-0 fade-in opacity-100 translate-y-0" style="transition-delay: 0.2s;">
+        <div class="md:w-1/2 mt-12 md:mt-0">
           <div class="relative">
             <img 
-              :src="activeBanner ? activeBanner.imageUrl : 'https://picsum.photos/seed/hero/600/400'" 
+              :src="activeBanner?.imageUrl || 'https://picsum.photos/seed/hero/600/400'" 
               alt="Pickleball Equipment" 
               class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]"
               @error="handleImageError"
@@ -325,9 +325,13 @@ const featuredProducts = computed(() => {
 
 // Active Banners
 const activeBanner = computed(() => {
+  console.log('🔍 [Home] activeBanner 计算, banners:', banners.value)
   if (banners.value.length > 0) {
-    return banners.value[0] // 暂时只显示第一个 Banner，后续可以做轮播
+    const banner = banners.value[0]
+    console.log('🔍 [Home] 使用 Banner:', banner)
+    return banner
   }
+  console.log('🔍 [Home] 没有可用的 Banner')
   return null
 })
 
