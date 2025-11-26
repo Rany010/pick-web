@@ -19,12 +19,13 @@ export const handler = async (event, context) => {
   }
 
   try {
+    const startTime = Date.now()
     const params = event.queryStringParameters || {}
     const category = params.category || 'all'
-    const limit = parseInt(params.limit) || 100
+    const limit = Math.min(parseInt(params.limit) || 20, 50) // 限制最大50条，默认20条
     const offset = parseInt(params.offset) || 0
 
-    console.log(`📦 查询商品列表 - 分类: ${category}, limit: ${limit}, offset: ${offset}`)
+    console.log(`📦 [products-list] 查询商品列表 - 分类: ${category}, limit: ${limit}, offset: ${offset}`)
 
     // 构建查询条件
     const where = {
@@ -67,7 +68,7 @@ export const handler = async (event, context) => {
     // 获取总数
     const total = await prisma.product.count({ where })
 
-    console.log(`✅ 成功查询到 ${products.length} 个商品，总数: ${total}`)
+    console.log(`✅ [products-list] 成功查询到 ${products.length} 个商品，总数: ${total}，耗时: ${Date.now() - startTime}ms`)
 
     return success(
       {
@@ -79,7 +80,8 @@ export const handler = async (event, context) => {
       `成功获取 ${products.length} 个商品`
     )
   } catch (err) {
-    console.error('❌ 查询商品列表失败:', err)
+    console.error('❌ [products-list] 查询商品列表失败:', err.message)
+    console.error('❌ [products-list] 错误堆栈:', err.stack)
     return error(
       '获取商品列表失败',
       500,

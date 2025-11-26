@@ -309,6 +309,15 @@ const banners = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+// 将 blobKey 转换为完整的图片 URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-product.svg'
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
+    return imageUrl
+  }
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
 // Featured products (only show products with isFeatured: true)
 const featuredProducts = computed(() => {
   return products.value.filter(p => p.isFeatured).slice(0, 3)
@@ -322,47 +331,86 @@ const activeBanner = computed(() => {
   return null
 })
 
-// Load data
+// Load data - 并行加载，优化性能
 const loadData = async () => {
   loading.value = true
   error.value = null
+  const startTime = Date.now()
+  console.log('🚀 [Home] 开始加载数据...')
+  
   try {
-    // Load Products
-    const productsRes = await getProductsList('all', 100, 0)
-    products.value = productsRes.products.map(p => ({
-      id: p.id,
-      name: p.nameEn,
-      slug: p.slug,
-      category: p.category.slug,
-      description: p.description,
-      price: Number(p.price),
-      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
-      rating: Number(p.rating),
-      reviewCount: p.reviewCount,
-      badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-      image: p.images[0]?.imageUrl || '/placeholder-product.svg',
-      images: p.images.map(img => img.imageUrl),
-      features: p.features || [],
-      specifications: p.specifications || {},
-      stock: p.stock,
-      isFeatured: p.isFeatured,
-      isNew: p.isNew
-    }))
-
-    // Load Banners
-    const bannersRes = await getBanners()
+    // 并行加载 Products 和 Banners，提升性能
+    const [productsRes, bannersRes] = await Promise.all([
+      getProductsList('all', 20, 0).catch(err => {
+        console.error('❌ [Home] 加载商品失败:', err)
+        return { products: [] }
+      }),
+      getBanners().catch(err => {
+        console.error('❌ [Home] 加载 Banner 失败:', err)
+        return { success: false, data: [] }
+      })
+    ])
     
-    if (bannersRes.success) {
-      banners.value = bannersRes.data
-      console.log('✅ 成功加载', banners.value.length, '个 Banner')
+    console.log(`📦 [Home] 商品API响应:`, productsRes)
+    console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
+
+    // 处理商品数据
+    if (productsRes?.products) {
+      products.value = productsRes.products.map(p => ({
+        id: p.id,
+        name: p.nameEn,
+        slug: p.slug,
+        category: p.category?.slug || 'unknown',
+        description: p.description,
+        price: Number(p.price),
+        originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+        rating: Number(p.rating),
+        reviewCount: p.reviewCount,
+        badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+        image: getImageUrl(p.images[0]?.imageUrl),
+        images: p.images.map(img => getImageUrl(img.imageUrl)),
+        features: p.features || [],
+        specifications: p.specifications || {},
+        stock: p.stock,
+        isFeatured: p.isFeatured,
+        isNew: p.isNew
+      }))
+      console.log(`✅ [Home] 成功加载 ${products.value.length} 个商品`)
+    }
+
+    // 处理 Banner 数据
+    if (bannersRes.success && Array.isArray(bannersRes.data)) {
+      banners.value = bannersRes.data.map(b => {
+        // 处理图片 URL - 统一转换为可访问的 URL
+        let imageUrl = b.imageUrl
+        if (imageUrl) {
+          // 如果是完整 URL 或 data: 开头，保持不变
+          if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
+            // 保持不变
+          } 
+          // 如果是相对路径（以 / 开头），保持不变
+          else if (imageUrl.startsWith('/')) {
+            // 保持不变
+          }
+          // 否则认为是 blobKey，需要转换
+          else {
+            imageUrl = `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+          }
+        }
+        console.log(`🖼️ [Home] Banner "${b.title}" 图片URL: ${b.imageUrl} -> ${imageUrl}`)
+        return { ...b, imageUrl }
+      })
+      console.log(`✅ [Home] 成功加载 ${banners.value.length} 个 Banner`)
     } else {
-      console.warn('⚠️ 获取 Banners 失败:', bannersRes.message || 'Unknown error')
+      console.warn('⚠️ [Home] 获取 Banners 失败:', bannersRes.message || 'Unknown error')
+      banners.value = []
     }
   } catch (err) {
     error.value = err.message
-    console.error('加载数据失败:', err)
+    console.error('❌ [Home] 加载数据失败:', err)
   } finally {
     loading.value = false
+    console.log(`⏱️ [Home] 数据加载完成，耗时: ${Date.now() - startTime}ms`)
   }
 }
 

@@ -21,9 +21,10 @@
                 <div class="flex-shrink-0 h-24 w-40 relative rounded overflow-hidden bg-gray-100 border border-gray-200">
                   <img
                     v-if="banner.imageUrl"
-                    :src="banner.imageUrl"
+                    :src="getImageUrl(banner.imageUrl)"
                     :alt="banner.title"
                     class="h-full w-full object-cover"
+                    @error="(e) => console.error('❌ Banner图片加载失败:', banner.imageUrl)"
                   />
                   <div v-else class="flex items-center justify-center h-full text-gray-400">
                     No Image
@@ -118,7 +119,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Banner Image <span class="text-red-500">*</span></label>
                   
                   <div v-if="form.imageUrl" class="mb-3 relative group">
-                    <img :src="form.imageUrl" class="w-full h-32 object-cover rounded-lg border border-gray-200" />
+                    <img :src="getImageUrl(form.imageUrl)" class="w-full h-32 object-cover rounded-lg border border-gray-200" />
                     <button 
                       type="button"
                       @click="form.imageUrl = ''"
@@ -220,6 +221,21 @@ import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import { getBanners, createBanner, updateBanner, deleteBanner, uploadImage } from '@/api/admin'
 
+// 将 blobKey 转换为完整的图片 URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return ''
+  // 如果已经是完整 URL，直接返回
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
+    return imageUrl
+  }
+  // 如果是相对路径（以 / 开头），直接返回
+  if (imageUrl.startsWith('/')) {
+    return imageUrl
+  }
+  // 否则认为是 blobKey，构造完整 URL
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
 const banners = ref([])
 const showModal = ref(false)
 const loading = ref(false)
@@ -302,7 +318,10 @@ const handleImageUpload = async (event) => {
       })
 
       if (response.success) {
-        form.value.imageUrl = response.data.imageUrl
+        // 存储 blobKey，显示时转换为完整 URL
+        const blobKey = response.data.blobKey || response.data.imageUrl
+        form.value.imageUrl = blobKey
+        console.log('📸 [BannerManage] 图片上传成功, blobKey:', blobKey)
       } else {
         alert('Failed to upload image: ' + response.error)
       }

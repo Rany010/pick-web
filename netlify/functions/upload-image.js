@@ -92,15 +92,13 @@ export const handler = async (event, context) => {
         }
       })
 
-      // 构造访问 URL
-      const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || 'http://localhost:8888'
-      const imageUrl = `${siteUrl}/.netlify/functions/get-image?key=${uniqueFileName}`
-      
-      console.log(`✅ Netlify Blobs 上传成功: ${uniqueFileName}`)
+      // 只返回 blobKey，前端根据需要构造完整 URL
+      // 这样可以避免本地/生产环境 URL 不一致的问题
+      console.log(`✅ [upload-image] Netlify Blobs 上传成功: ${uniqueFileName}`)
 
       return success({
-        imageUrl: imageUrl,
-        thumbnailUrl: imageUrl, 
+        imageUrl: uniqueFileName,  // 只存 key，前端/后端根据需要构造完整 URL
+        thumbnailUrl: uniqueFileName, 
         blobKey: uniqueFileName,
         fileName: uniqueFileName,
         storage: 'netlify-blobs',

@@ -198,20 +198,29 @@ const formatSpecKey = (key) => {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 }
 
+// 将 blobKey 转换为完整的图片 URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-product.svg'
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
+    return imageUrl
+  }
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
 // Transform API response to component format
 const transformProduct = (p) => ({
   id: p.id,
   name: p.nameEn,
   slug: p.slug,
-  category: p.category.slug,
+  category: p.category?.slug || 'unknown',
   description: p.description,
   price: Number(p.price),
   originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
   rating: Number(p.rating),
   reviewCount: p.reviewCount,
   badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-  image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
-  images: p.images.map(img => img.imageUrl),
+  image: getImageUrl(p.images[0]?.imageUrl),
+  images: p.images.map(img => getImageUrl(img.imageUrl)),
   features: p.features || [],
   specifications: p.specifications || {},
   stock: p.stock,

@@ -67,6 +67,15 @@ const products = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+// 将 blobKey 转换为完整的图片 URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-product.svg'
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
+    return imageUrl
+  }
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
 const filteredProducts = computed(() => {
   if (selectedCategory.value === 'all') {
     return products.value
@@ -97,26 +106,29 @@ const loadProducts = async () => {
   loading.value = true
   error.value = null
   try {
-    const response = await getProductsList('all', 100, 0)
+    console.log('🚀 [Products] 开始加载商品列表...')
+    const startTime = Date.now()
+    const response = await getProductsList('all', 50, 0)
     products.value = response.products.map(p => ({
       id: p.id,
       name: p.nameEn,
       slug: p.slug,
-      category: p.category.slug,
+      category: p.category?.slug || 'unknown',
       description: p.description,
       price: Number(p.price),
       originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
       rating: Number(p.rating),
       reviewCount: p.reviewCount,
       badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-      image: p.images[0]?.imageUrl || 'https://picsum.photos/seed/default/400/300',
-      images: p.images.map(img => img.imageUrl),
+      image: getImageUrl(p.images[0]?.imageUrl),
+      images: p.images.map(img => getImageUrl(img.imageUrl)),
       features: p.features || [],
       specifications: p.specifications || {},
       stock: p.stock,
       isFeatured: p.isFeatured,
       isNew: p.isNew
     }))
+    console.log(`✅ [Products] 加载完成，共 ${products.value.length} 个商品，耗时: ${Date.now() - startTime}ms`)
   } catch (err) {
     error.value = err.message
     console.error('加载商品失败:', err)

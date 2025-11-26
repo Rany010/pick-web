@@ -18,9 +18,9 @@ export const handler = async (event, context) => {
   }
 
   try {
+    console.log('🔍 [banners-list] 开始获取 Banner 列表...')
+    
     // 如果是后台管理调用，需要验证权限
-    // 这里简单处理：如果带了 Authorization 头，就作为管理员查询（返回所有，包括未激活的）
-    // 否则只返回激活的
     const authHeader = event.headers.authorization || event.headers.Authorization
     let isAdmin = false
     
@@ -30,11 +30,13 @@ export const handler = async (event, context) => {
         isAdmin = true
       }
     }
+    console.log(`🔍 [banners-list] 是否管理员: ${isAdmin}`)
 
     let where = {}
     // 非管理员只能看到激活的且在有效期内的
     if (!isAdmin) {
       const now = new Date()
+      console.log(`🔍 [banners-list] 当前时间: ${now.toISOString()}`)
       where = {
         isActive: true,
         AND: [
@@ -54,6 +56,8 @@ export const handler = async (event, context) => {
       }
     }
 
+    console.log(`🔍 [banners-list] 查询条件:`, JSON.stringify(where))
+
     const banners = await prisma.banner.findMany({
       where,
       orderBy: {
@@ -61,11 +65,17 @@ export const handler = async (event, context) => {
       }
     })
 
-    console.log(`📊 返回 ${banners.length} 个 Banner${isAdmin ? '（管理员视图）' : '（用户视图）'}`)
+    console.log(`📊 [banners-list] 查询到 ${banners.length} 个 Banner${isAdmin ? '（管理员视图）' : '（用户视图）'}`)
+    
+    // 打印每个 banner 的详情用于调试
+    banners.forEach((b, i) => {
+      console.log(`📊 [banners-list] Banner ${i + 1}: id=${b.id}, title="${b.title}", isActive=${b.isActive}, imageUrl=${b.imageUrl?.substring(0, 50)}...`)
+    })
 
     return success(banners)
   } catch (err) {
-    console.error('❌ 获取 Banner 列表失败:', err)
+    console.error('❌ [banners-list] 获取 Banner 列表失败:', err.message)
+    console.error('❌ [banners-list] 错误堆栈:', err.stack)
     return error('获取 Banner 列表失败', 500)
   }
 }
