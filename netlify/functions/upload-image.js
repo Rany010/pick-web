@@ -156,17 +156,23 @@ export const handler = async (event, context) => {
 
 
     // ============================================
-    // 方案 3: 临时方案 - 返回 base64（仅用于开发）
+    // 方案 3: 临时方案 (已移除)
+    // 如果上面的方案都失败，直接报错
     // ============================================
-    console.log('⚠️  使用临时方案：返回 base64 数据')
-    console.log('⚠️  生产环境请配置 Cloudinary 或 Netlify Blobs')
-
-    return success({
-      imageUrl: imageData, // 直接返回 base64
-      thumbnailUrl: imageData,
-      temporary: true,
-      warning: '请配置 Cloudinary 或 Netlify Blobs 用于生产环境'
-    }, '图片临时存储成功（开发模式）')
+    
+    // 如果执行到这里，说明所有上传方案都失败了
+    // 检查是否是因为配置缺失
+    const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY
+    
+    let errorMessage = '图片上传失败：'
+    if (!isCloudinaryConfigured) {
+      errorMessage += 'Netlify Blobs 上传失败，且未配置 Cloudinary。'
+    } else {
+      errorMessage += 'Netlify Blobs 和 Cloudinary 上传均失败。'
+    }
+    
+    console.error('❌ [upload-image] 所有存储方案均失败')
+    return error(errorMessage + ' 请检查 Netlify Blobs 配置或环境变量。', 500)
 
   } catch (err) {
     console.error('❌ 上传图片失败:', err)
