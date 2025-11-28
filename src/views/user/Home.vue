@@ -53,7 +53,6 @@
                   alt="Pickleball Equipment" 
                   class="w-full object-cover h-[300px] md:h-[400px]"
                   @error="handleImageError"
-                  @load="handleImageLoad"
                 >
               </transition>
             </div>
@@ -434,52 +433,28 @@ const startBannerInterval = () => {
 const loadData = async () => {
   loading.value = true
   error.value = null
-  const startTime = Date.now()
-  console.log('🚀 [Home] 开始加载数据...')
   
   try {
     // 并行加载 Products, Banners, 和 Settings
     const [productsRes, bannersRes, aboutRes] = await Promise.all([
-      getProductsList('all', 20, 0).catch(err => {
-        console.error('❌ [Home] 加载商品失败:', err)
-        return { products: [] }
-      }),
-      getBanners().catch(err => {
-        console.error('❌ [Home] 加载 Banner 失败:', err)
-        return { success: false, data: [] }
-      }),
-      getSetting('about_us').catch(err => {
-        console.error('❌ [Home] 加载 About 设置失败:', err)
-        return null
-      })
+      getProductsList('all', 20, 0).catch(() => ({ products: [] })),
+      getBanners().catch(() => ({ success: false, data: [] })),
+      getSetting('about_us').catch(() => null)
     ])
     
     // 处理 About 数据
-    console.log('📝 [Home] About API 原始响应:', aboutRes)
-    console.log('📝 [Home] About API 响应类型:', typeof aboutRes)
-    
     if (aboutRes) {
         let settings = aboutRes
         if (typeof aboutRes === 'string') {
-            console.log('📝 [Home] About 数据是字符串，尝试解析 JSON...')
             try {
                 settings = JSON.parse(aboutRes)
-                console.log('📝 [Home] JSON 解析成功:', settings)
             } catch (e) {
-                console.error('❌ [Home] JSON 解析失败:', e)
                 settings = {}
             }
         }
         
-        console.log('📝 [Home] 处理后的 settings:', settings)
-        console.log('📝 [Home] settings.title:', settings.title)
-        console.log('📝 [Home] settings.content:', settings.content)
-        console.log('📝 [Home] settings.imageUrl:', settings.imageUrl)
-        console.log('📝 [Home] settings.features:', settings.features)
-        
         // 只有当数据非空时才覆盖默认值
         if (settings.title) aboutData.value.title = settings.title
-        // content 和 features 需要检查数组是否有内容
         if (Array.isArray(settings.content) && settings.content.length > 0) {
           aboutData.value.content = settings.content
         }
@@ -487,39 +462,30 @@ const loadData = async () => {
         if (Array.isArray(settings.features) && settings.features.length > 0) {
           aboutData.value.features = settings.features
         }
-        
-        console.log('✅ [Home] 更新后的 aboutData:', JSON.stringify(aboutData.value, null, 2))
-    } else {
-        console.warn('⚠️ [Home] About API 返回空值，使用默认数据')
     }
 
-    console.log(`📦 [Home] 商品API响应:`, productsRes)
-    console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
-  
-      // 处理商品数据
-      if (productsRes?.products) {
-        products.value = productsRes.products.map(p => ({
-          id: p.id,
-          name: p.nameEn,
-          slug: p.slug,
-          category: p.category?.slug || 'unknown',
-          description: p.description,
-          price: Number(p.price),
-          originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
-          rating: Number(p.rating),
-          reviewCount: p.reviewCount,
-          badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-          image: p.images[0]?.imageUrl || '/placeholder-product.svg', 
-          images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'),
-          features: p.features || [],
-          specifications: p.specifications || {},
-          stock: p.stock,
-          isFeatured: p.isFeatured,
-          isNew: p.isNew
-        }))
-      } else {
-        console.warn('⚠️ [Home] API响应中未找到 products 字段:', productsRes)
-      }
+    // 处理商品数据
+    if (productsRes?.products) {
+      products.value = productsRes.products.map(p => ({
+        id: p.id,
+        name: p.nameEn,
+        slug: p.slug,
+        category: p.category?.slug || 'unknown',
+        description: p.description,
+        price: Number(p.price),
+        originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+        rating: Number(p.rating),
+        reviewCount: p.reviewCount,
+        badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+        image: p.images[0]?.imageUrl || '/placeholder-product.svg', 
+        images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'),
+        features: p.features || [],
+        specifications: p.specifications || {},
+        stock: p.stock,
+        isFeatured: p.isFeatured,
+        isNew: p.isNew
+      }))
+    }
 
     // 处理 Banner 数据
     if (bannersRes.success && Array.isArray(bannersRes.data)) {
@@ -529,10 +495,9 @@ const loadData = async () => {
     }
   } catch (err) {
     error.value = err.message
-    console.error('❌ [Home] 加载数据失败:', err)
+    console.error('Failed to load data:', err)
   } finally {
     loading.value = false
-    console.log(`⏱️ [Home] 数据加载完成，耗时: ${Date.now() - startTime}ms`)
   }
 }
 
@@ -573,16 +538,10 @@ const handleSubmit = () => {
 }
 
 const handleImageError = (event) => {
-  console.error('🖼️ Banner 图片加载失败:', event.target.src)
   event.target.src = 'https://picsum.photos/seed/hero/600/400'
 }
 
-const handleImageLoad = (event) => {
-  console.log('🖼️ Banner 图片加载成功')
-}
-
 const handleAboutImageError = (event) => {
-  console.error('🖼️ About 图片加载失败:', event.target.src)
   event.target.src = 'https://picsum.photos/seed/about/600/400'
 }
 

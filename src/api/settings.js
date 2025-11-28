@@ -4,17 +4,12 @@ const API_BASE = '/.netlify/functions'
 
 export const getSetting = async (key) => {
   try {
-    console.log(`🔍 [settings.js] 获取设置: ${key}`)
     const response = await axios.get(`${API_BASE}/get-setting`, {
       params: { key }
     })
-    console.log(`📥 [settings.js] API 完整响应:`, response.data)
-    console.log(`📥 [settings.js] response.data.data:`, response.data.data)
-    console.log(`📥 [settings.js] response.data.data 类型:`, typeof response.data.data)
-    // get-setting 返回 success(result)，即 response.data.data 就是 result
     return response.data.data
   } catch (error) {
-    console.error(`❌ [settings.js] Failed to fetch setting ${key}:`, error)
+    console.error(`Failed to fetch setting ${key}:`, error)
     return null
   }
 }
