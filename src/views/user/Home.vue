@@ -472,10 +472,16 @@ const loadData = async () => {
         console.log('📝 [Home] settings.imageUrl:', settings.imageUrl)
         console.log('📝 [Home] settings.features:', settings.features)
         
+        // 只有当数据非空时才覆盖默认值
         if (settings.title) aboutData.value.title = settings.title
-        if (settings.content) aboutData.value.content = settings.content
+        // content 和 features 需要检查数组是否有内容
+        if (Array.isArray(settings.content) && settings.content.length > 0) {
+          aboutData.value.content = settings.content
+        }
         if (settings.imageUrl) aboutData.value.imageUrl = settings.imageUrl
-        if (settings.features) aboutData.value.features = settings.features
+        if (Array.isArray(settings.features) && settings.features.length > 0) {
+          aboutData.value.features = settings.features
+        }
         
         console.log('✅ [Home] 更新后的 aboutData:', JSON.stringify(aboutData.value, null, 2))
     } else {

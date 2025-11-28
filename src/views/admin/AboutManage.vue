@@ -237,11 +237,17 @@ const removeFeature = (index) => {
 const handleSave = async () => {
   loading.value = true
   try {
+    console.log('💾 [AboutManage] 开始保存...')
+    console.log('💾 [AboutManage] contentRaw.value:', contentRaw.value)
+    
     // Process contentRaw back to array (split by double newlines for paragraphs)
     form.value.content = contentRaw.value
       .split(/\n\n+/)
       .map(paragraph => paragraph.trim())
       .filter(paragraph => paragraph.length > 0)
+    
+    console.log('💾 [AboutManage] 处理后的 content:', form.value.content)
+    console.log('💾 [AboutManage] 完整的 form.value:', JSON.stringify(form.value, null, 2))
 
     const response = await updateSetting(
       'about_us', 
@@ -250,13 +256,15 @@ const handleSave = async () => {
       'json'
     )
 
+    console.log('💾 [AboutManage] 保存响应:', response)
+
     if (response.success) {
       alert('Settings saved successfully!')
     } else {
       alert('Failed to save settings.')
     }
   } catch (error) {
-    console.error('Save error:', error)
+    console.error('❌ [AboutManage] Save error:', error)
     alert('An error occurred while saving.')
   } finally {
     loading.value = false
