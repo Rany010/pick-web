@@ -124,45 +124,54 @@ export const handler = async (event, context) => {
 
     // ============================================
     // 方案 2: 使用 Cloudinary (需要配置环境变量)
+    // 注意：cloudinary 包未安装，此功能暂时禁用
+    // 如需启用，请运行: npm install cloudinary
     // ============================================
     if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
-      const cloudinary = await import('cloudinary').then(m => m.v2)
-      
-      cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET
-      })
-
       try {
-        const uploadResult = await cloudinary.uploader.upload(imageData, {
-          folder: 'pickball-products',
-          resource_type: 'image',
-          transformation: [
-            { width: 1200, height: 1200, crop: 'limit', quality: 'auto' }
-          ]
-        })
+        // 动态导入 cloudinary，添加 .catch() 处理模块不存在的情况
+        const cloudinaryModule = await import('cloudinary').catch(() => null)
+        
+        if (cloudinaryModule) {
+          const cloudinary = cloudinaryModule.v2
+          
+          cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+          })
 
-        // 生成缩略图URL
-        const thumbnailUrl = cloudinary.url(uploadResult.public_id, {
-          width: 400,
-          height: 400,
-          crop: 'fill',
-          quality: 'auto'
-        })
+          const uploadResult = await cloudinary.uploader.upload(imageData, {
+            folder: 'pickball-products',
+            resource_type: 'image',
+            transformation: [
+              { width: 1200, height: 1200, crop: 'limit', quality: 'auto' }
+            ]
+          })
 
-        console.log(`✅ Cloudinary 上传成功: ${uploadResult.secure_url}`)
+          // 生成缩略图URL
+          const thumbnailUrl = cloudinary.url(uploadResult.public_id, {
+            width: 400,
+            height: 400,
+            crop: 'fill',
+            quality: 'auto'
+          })
 
-        return success({
-          imageUrl: uploadResult.secure_url,
-          thumbnailUrl: thumbnailUrl,
-          publicId: uploadResult.public_id,
-          width: uploadResult.width,
-          height: uploadResult.height
-        }, '图片上传成功')
+          console.log(`✅ Cloudinary 上传成功: ${uploadResult.secure_url}`)
+
+          return success({
+            imageUrl: uploadResult.secure_url,
+            thumbnailUrl: thumbnailUrl,
+            publicId: uploadResult.public_id,
+            width: uploadResult.width,
+            height: uploadResult.height
+          }, '图片上传成功')
+        } else {
+          console.warn('⚠️ Cloudinary 模块未安装，跳过 Cloudinary 上传')
+        }
       } catch (uploadError) {
         console.error('Cloudinary 上传失败:', uploadError)
-        return error('图片上传失败: ' + uploadError.message, 500)
+        // 不返回错误，继续尝试其他方案或报告整体失败
       }
     }
 
