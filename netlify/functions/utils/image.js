@@ -76,13 +76,8 @@ export function getImageUrl(blobKey, context = null) {
   }
   
   // 构造 Netlify Functions URL
-  // 在生产环境中，使用环境变量或从 context 获取
-  const baseUrl = context?.site?.url || 
-                  process.env.URL || 
-                  process.env.DEPLOY_PRIME_URL || 
-                  'http://localhost:8888'
-  
-  return `${baseUrl}/.netlify/functions/get-image?key=${encodeURIComponent(blobKey)}`
+  // 使用相对路径，避免不同环境（本地/生产）的域名问题
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(blobKey)}`
 }
 
 /**
