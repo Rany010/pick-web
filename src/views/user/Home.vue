@@ -3,7 +3,7 @@
     <Navbar />
     
     <!-- Hero Section with Banner Carousel -->
-    <section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
+    <section class="pt-20 md:pt-24 pb-10 md:pb-12 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2">
           
@@ -126,15 +126,15 @@
     </section>
 
     <!-- Featured Products Section -->
-    <section class="py-16 bg-white">
+    <section class="py-10 bg-white">
       <div class="container mx-auto px-4">
-        <div class="text-center mb-16 fade-in">
-          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-4">Featured Products</h2>
+        <div class="text-center mb-8 fade-in">
+          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-2">Featured Products</h2>
           <p class="text-gray-600 max-w-2xl mx-auto">Explore our selection of top-rated pickleball equipment</p>
         </div>
         
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductCard 
             v-for="product in featuredProducts" 
             :key="product.id"
@@ -142,7 +142,7 @@
           />
         </div>
         
-        <div class="text-center mt-12">
+        <div class="text-center mt-8">
           <router-link to="/products" class="btn-primary inline-block">
             View All Products
           </router-link>
@@ -151,9 +151,9 @@
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-16 bg-secondary/5">
+    <section id="about" class="py-10 bg-secondary/5">
       <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="flex flex-col md:flex-row items-center gap-8">
           <div class="md:w-1/2">
             <img 
               :src="getImageUrl(aboutData.imageUrl)" 
@@ -182,14 +182,14 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-16 bg-white">
+    <section id="contact" class="py-10 bg-white">
       <div class="container mx-auto px-4">
-        <div class="text-center mb-16 fade-in">
-          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-4">Contact Us</h2>
+        <div class="text-center mb-8 fade-in">
+          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-2">Contact Us</h2>
           <p class="text-gray-600 max-w-2xl mx-auto">Have questions? We're here to help!</p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
           <!-- Contact Form -->
           <div class="bg-white rounded-xl shadow-lg p-8 fade-in">
             <h3 class="text-2xl font-bold mb-6">Send us a message</h3>
