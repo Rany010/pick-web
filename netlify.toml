@@ -6,6 +6,15 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Netlify Functions 配置
+[functions]
+  # 使用 esbuild 打包，但排除 Prisma 相关模块（让它们在运行时加载）
+  node_bundler = "esbuild"
+  # 将 @prisma/client 和 prisma 标记为外部依赖
+  external_node_modules = ["@prisma/client"]
+  # 包含 Prisma 引擎文件
+  included_files = ["node_modules/.prisma/**", "node_modules/@prisma/client/**"]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

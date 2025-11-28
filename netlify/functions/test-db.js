@@ -18,7 +18,10 @@ export const handler = async (event, context) => {
   try {
     results.tests.prismaClient = {
       exists: !!prisma,
-      type: typeof prisma
+      type: typeof prisma,
+      hasConnect: typeof prisma?.$connect === 'function',
+      hasSetting: !!prisma?.setting,
+      keys: prisma ? Object.keys(prisma).slice(0, 10) : []
     }
   } catch (e) {
     results.tests.prismaClient = { error: e.message }
