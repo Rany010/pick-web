@@ -352,9 +352,9 @@ const banners = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-// Featured products (only show products with isFeatured: true)
+// Featured products (show top 3 products, backend already sorts by isFeatured desc)
 const featuredProducts = computed(() => {
-  return products.value.filter(p => p.isFeatured).slice(0, 3)
+  return products.value.slice(0, 3)
 })
 
 // Banner 轮播相关
