@@ -67,15 +67,6 @@ const products = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-// 将 blobKey 转换为完整的图片 URL
-const getImageUrl = (imageUrl) => {
-  if (!imageUrl) return '/placeholder-product.svg'
-  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
-    return imageUrl
-  }
-  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
-}
-
 const filteredProducts = computed(() => {
   if (selectedCategory.value === 'all') {
     return products.value
@@ -109,6 +100,7 @@ const loadProducts = async () => {
     console.log('🚀 [Products] 开始加载商品列表...')
     const startTime = Date.now()
     const response = await getProductsList('all', 50, 0)
+    // 后端 API 已经返回完整 URL，直接使用即可
     products.value = response.products.map(p => ({
       id: p.id,
       name: p.nameEn,
@@ -120,8 +112,8 @@ const loadProducts = async () => {
       rating: Number(p.rating),
       reviewCount: p.reviewCount,
       badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-      image: getImageUrl(p.images[0]?.imageUrl),
-      images: p.images.map(img => getImageUrl(img.imageUrl)),
+      image: p.images[0]?.imageUrl || '/placeholder-product.svg', // 后端已返回完整 URL
+      images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'), // 后端已返回完整 URL
       features: p.features || [],
       specifications: p.specifications || {},
       stock: p.stock,

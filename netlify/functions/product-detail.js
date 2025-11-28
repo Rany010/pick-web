@@ -1,5 +1,6 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
+import { processProductImages } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -59,9 +60,12 @@ export const handler = async (event, context) => {
       data: { viewCount: { increment: 1 } }
     })
 
+    // 处理产品图片 URL，将 blobKey 转换为完整 URL
+    const processedProduct = processProductImages(product, context)
+
     console.log(`✅ 成功查询商品: ${product.nameEn}`)
 
-    return success(product, '成功获取商品详情')
+    return success(processedProduct, '成功获取商品详情')
   } catch (err) {
     console.error('❌ 查询商品详情失败:', err)
     return error(

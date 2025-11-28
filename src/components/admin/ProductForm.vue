@@ -186,7 +186,7 @@
                     class="relative group"
                   >
                     <img
-                      :src="img.imageUrl"
+                      :src="getImageUrl(img.imageUrl)"
                       :alt="`Product image ${index + 1}`"
                       class="w-full h-24 object-cover rounded-lg border-2"
                       :class="index === 0 ? 'border-orange-500' : 'border-gray-200'"
@@ -395,6 +395,43 @@ const productImages = ref([])
 const uploading = ref(false)
 const fileInput = ref(null)
 
+// 将 blobKey 转换为完整的图片 URL（用于显示）
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-product.svg'
+  // 如果已经是完整 URL 或 base64，直接返回
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
+    return imageUrl
+  }
+  // 否则认为是 blobKey，构造完整 URL
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
+// 从完整 URL 中提取 blobKey（用于存储）
+const extractBlobKey = (url) => {
+  if (!url || typeof url !== 'string') return url
+  // 如果已经是 blobKey（不包含 http、data:、/），直接返回
+  if (!url.startsWith('http') && !url.startsWith('data:') && !url.startsWith('/')) {
+    return url
+  }
+  // 如果是完整 URL，尝试提取 key 参数
+  try {
+    const urlObj = new URL(url)
+    const key = urlObj.searchParams.get('key')
+    if (key) return decodeURIComponent(key)
+  } catch (e) {
+    // 不是有效 URL
+  }
+  // 如果是相对路径，尝试提取 key
+  if (url.includes('get-image?key=')) {
+    const match = url.match(/[?&]key=([^&]+)/)
+    if (match && match[1]) {
+      return decodeURIComponent(match[1])
+    }
+  }
+  // 无法提取，返回原值
+  return url
+}
+
 // 创建分类相关
 const showCategoryModal = ref(false)
 const creatingCategory = ref(false)
@@ -427,9 +464,10 @@ watch(() => props.product, (product) => {
     }
     
     // 获取商品图片
+    // API 返回的是完整 URL，需要提取 blobKey 存储
     if (product.images && product.images.length > 0) {
       productImages.value = product.images.map(img => ({
-        imageUrl: img.imageUrl,
+        imageUrl: extractBlobKey(img.imageUrl), // 提取 blobKey 存储
         altText: img.altText || product.nameEn
       }))
     } else {
@@ -494,10 +532,13 @@ const handleFileSelect = async (event) => {
       })
       
       if (response.success) {
+        // 存储 blobKey（不是完整 URL）
+        const blobKey = response.data.blobKey || response.data.imageUrl
         productImages.value.push({
-          imageUrl: response.data.imageUrl,
+          imageUrl: blobKey, // 存储 blobKey
           altText: form.value.nameEn || 'Product image'
         })
+        console.log('📸 [ProductForm] 图片上传成功, blobKey:', blobKey)
       } else {
         alert(`Failed to upload ${file.name}: ${response.error}`)
       }

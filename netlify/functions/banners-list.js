@@ -1,6 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
+import { processBannerImages } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -67,12 +68,15 @@ export const handler = async (event, context) => {
 
     console.log(`📊 [banners-list] 查询到 ${banners.length} 个 Banner${isAdmin ? '（管理员视图）' : '（用户视图）'}`)
     
+    // 处理 Banner 图片 URL，将 blobKey 转换为完整 URL
+    const processedBanners = processBannerImages(banners, context)
+    
     // 打印每个 banner 的详情用于调试
-    banners.forEach((b, i) => {
+    processedBanners.forEach((b, i) => {
       console.log(`📊 [banners-list] Banner ${i + 1}: id=${b.id}, title="${b.title}", isActive=${b.isActive}, imageUrl=${b.imageUrl?.substring(0, 50)}...`)
     })
 
-    return success(banners)
+    return success(processedBanners)
   } catch (err) {
     console.error('❌ [banners-list] 获取 Banner 列表失败:', err.message)
     console.error('❌ [banners-list] 错误堆栈:', err.stack)

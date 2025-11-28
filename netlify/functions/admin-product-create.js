@@ -1,6 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
+import { normalizeProductImages, processProductImages } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -69,20 +70,29 @@ export const handler = async (event, context) => {
     })
 
     // 如果有图片，创建图片记录
+    // 规范化图片 URL，确保只存储 blobKey
     if (data.images && Array.isArray(data.images)) {
+      const normalizedImages = normalizeProductImages(data.images)
+      
       await Promise.all(
-        data.images.map((img, index) =>
-          prisma.productImage.create({
+        normalizedImages.map((img, index) => {
+          // 只存储 blobKey，不存储完整 URL
+          if (!img.imageUrl) {
+            console.warn(`⚠️ 产品图片 ${index} 的 URL 无效，跳过`)
+            return Promise.resolve()
+          }
+          
+          return prisma.productImage.create({
             data: {
               productId: product.id,
-              imageUrl: img.imageUrl,
-              thumbnailUrl: img.thumbnailUrl || null,
+              imageUrl: img.imageUrl, // 只存储 blobKey
+              thumbnailUrl: img.thumbnailUrl || img.imageUrl, // 只存储 blobKey
               altText: img.altText || product.nameEn,
-              sortOrder: index,
-              isPrimary: index === 0
+              sortOrder: img.sortOrder !== undefined ? img.sortOrder : index,
+              isPrimary: img.isPrimary !== undefined ? img.isPrimary : (index === 0)
             }
           })
-        )
+        })
       )
     }
 
@@ -100,9 +110,28 @@ export const handler = async (event, context) => {
       )
     }
 
+    // 重新获取商品以包含图片
+    const createdProduct = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        category: true,
+        images: {
+          orderBy: { sortOrder: 'asc' }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    })
+
+    // 处理图片 URL，返回完整 URL 给前端
+    const processedProduct = processProductImages(createdProduct, context)
+
     console.log(`✅ 成功创建商品 ID: ${product.id}`)
 
-    return success(product, '商品创建成功')
+    return success(processedProduct, '商品创建成功')
   } catch (err) {
     console.error('❌ 创建商品失败:', err)
     if (err.code) console.error('Error Code:', err.code)

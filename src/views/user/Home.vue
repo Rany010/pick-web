@@ -352,15 +352,6 @@ const banners = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-// 将 blobKey 转换为完整的图片 URL
-const getImageUrl = (imageUrl) => {
-  if (!imageUrl) return '/placeholder-product.svg'
-  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
-    return imageUrl
-  }
-  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
-}
-
 // Featured products (only show products with isFeatured: true)
 const featuredProducts = computed(() => {
   return products.value.filter(p => p.isFeatured).slice(0, 3)
@@ -460,6 +451,7 @@ const loadData = async () => {
     console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
 
     // 处理商品数据
+    // 后端 API 已经返回完整 URL，直接使用即可
     if (productsRes?.products) {
       products.value = productsRes.products.map(p => ({
         id: p.id,
@@ -472,8 +464,8 @@ const loadData = async () => {
         rating: Number(p.rating),
         reviewCount: p.reviewCount,
         badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-        image: getImageUrl(p.images[0]?.imageUrl),
-        images: p.images.map(img => getImageUrl(img.imageUrl)),
+        image: p.images[0]?.imageUrl || '/placeholder-product.svg', // 后端已返回完整 URL
+        images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'), // 后端已返回完整 URL
         features: p.features || [],
         specifications: p.specifications || {},
         stock: p.stock,
@@ -484,27 +476,9 @@ const loadData = async () => {
     }
 
     // 处理 Banner 数据
+    // 后端 API 已经返回完整 URL，直接使用即可
     if (bannersRes.success && Array.isArray(bannersRes.data)) {
-      banners.value = bannersRes.data.map(b => {
-        // 处理图片 URL - 统一转换为可访问的 URL
-        let imageUrl = b.imageUrl
-        if (imageUrl) {
-          // 如果是完整 URL 或 data: 开头，保持不变
-          if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
-            // 保持不变
-          } 
-          // 如果是相对路径（以 / 开头），保持不变
-          else if (imageUrl.startsWith('/')) {
-            // 保持不变
-          }
-          // 否则认为是 blobKey，需要转换
-          else {
-            imageUrl = `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
-          }
-        }
-        console.log(`🖼️ [Home] Banner "${b.title}" 图片URL: ${b.imageUrl} -> ${imageUrl}`)
-        return { ...b, imageUrl }
-      })
+      banners.value = bannersRes.data
       console.log(`✅ [Home] 成功加载 ${banners.value.length} 个 Banner`)
     } else {
       console.warn('⚠️ [Home] 获取 Banners 失败:', bannersRes.message || 'Unknown error')

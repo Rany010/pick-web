@@ -221,10 +221,10 @@ import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import { getBanners, createBanner, updateBanner, deleteBanner, uploadImage } from '@/api/admin'
 
-// 将 blobKey 转换为完整的图片 URL
+// 将 blobKey 转换为完整的图片 URL（用于显示）
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return ''
-  // 如果已经是完整 URL，直接返回
+  // 如果已经是完整 URL 或 base64，直接返回
   if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
     return imageUrl
   }
@@ -234,6 +234,32 @@ const getImageUrl = (imageUrl) => {
   }
   // 否则认为是 blobKey，构造完整 URL
   return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
+
+// 从完整 URL 中提取 blobKey（用于存储）
+const extractBlobKey = (url) => {
+  if (!url || typeof url !== 'string') return url
+  // 如果已经是 blobKey（不包含 http、data:、/），直接返回
+  if (!url.startsWith('http') && !url.startsWith('data:') && !url.startsWith('/')) {
+    return url
+  }
+  // 如果是完整 URL，尝试提取 key 参数
+  try {
+    const urlObj = new URL(url)
+    const key = urlObj.searchParams.get('key')
+    if (key) return decodeURIComponent(key)
+  } catch (e) {
+    // 不是有效 URL
+  }
+  // 如果是相对路径，尝试提取 key
+  if (url.includes('get-image?key=')) {
+    const match = url.match(/[?&]key=([^&]+)/)
+    if (match && match[1]) {
+      return decodeURIComponent(match[1])
+    }
+  }
+  // 无法提取，返回原值
+  return url
 }
 
 const banners = ref([])
@@ -271,7 +297,7 @@ const openModal = (banner = null) => {
     form.value = {
       title: banner.title,
       subtitle: banner.subtitle || '',
-      imageUrl: banner.imageUrl,
+      imageUrl: extractBlobKey(banner.imageUrl), // 提取 blobKey 存储
       linkUrl: banner.linkUrl || '',
       buttonText: banner.buttonText || '',
       sortOrder: banner.sortOrder || 0,

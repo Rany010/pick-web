@@ -198,16 +198,8 @@ const formatSpecKey = (key) => {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 }
 
-// 将 blobKey 转换为完整的图片 URL
-const getImageUrl = (imageUrl) => {
-  if (!imageUrl) return '/placeholder-product.svg'
-  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/')) {
-    return imageUrl
-  }
-  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
-}
-
 // Transform API response to component format
+// 后端 API 已经返回完整 URL，直接使用即可
 const transformProduct = (p) => ({
   id: p.id,
   name: p.nameEn,
@@ -219,8 +211,8 @@ const transformProduct = (p) => ({
   rating: Number(p.rating),
   reviewCount: p.reviewCount,
   badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-  image: getImageUrl(p.images[0]?.imageUrl),
-  images: p.images.map(img => getImageUrl(img.imageUrl)),
+  image: p.images[0]?.imageUrl || '/placeholder-product.svg', // 后端已返回完整 URL
+  images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'), // 后端已返回完整 URL
   features: p.features || [],
   specifications: p.specifications || {},
   stock: p.stock,

@@ -1,6 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
+import { normalizeProductImages, processProductImages } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -91,26 +92,36 @@ export const handler = async (event, context) => {
     })
 
     // 如果提供了图片数据，更新图片
+    // 规范化图片 URL，确保只存储 blobKey
     if (data.images && Array.isArray(data.images)) {
       // 删除现有图片
       await prisma.productImage.deleteMany({
         where: { productId: productId }
       })
 
+      // 规范化图片 URL
+      const normalizedImages = normalizeProductImages(data.images)
+
       // 创建新图片记录
       await Promise.all(
-        data.images.map((img, index) =>
-          prisma.productImage.create({
+        normalizedImages.map((img, index) => {
+          // 只存储 blobKey，不存储完整 URL
+          if (!img.imageUrl) {
+            console.warn(`⚠️ 产品图片 ${index} 的 URL 无效，跳过`)
+            return Promise.resolve()
+          }
+          
+          return prisma.productImage.create({
             data: {
               productId: productId,
-              imageUrl: img.imageUrl,
-              thumbnailUrl: img.thumbnailUrl || null,
+              imageUrl: img.imageUrl, // 只存储 blobKey
+              thumbnailUrl: img.thumbnailUrl || img.imageUrl, // 只存储 blobKey
               altText: img.altText || product.nameEn,
-              sortOrder: index,
-              isPrimary: index === 0
+              sortOrder: img.sortOrder !== undefined ? img.sortOrder : index,
+              isPrimary: img.isPrimary !== undefined ? img.isPrimary : (index === 0)
             }
           })
-        )
+        })
       )
     }
 
@@ -119,7 +130,9 @@ export const handler = async (event, context) => {
       where: { id: productId },
       include: {
         category: true,
-        images: true,
+        images: {
+          orderBy: { sortOrder: 'asc' }
+        },
         tags: {
           include: {
             tag: true
@@ -128,9 +141,12 @@ export const handler = async (event, context) => {
       }
     })
 
+    // 处理图片 URL，返回完整 URL 给前端
+    const processedProduct = processProductImages(updatedProduct, context)
+
     console.log(`✅ 成功更新商品: ${updatedProduct.nameEn}`)
 
-    return success(updatedProduct, '商品更新成功')
+    return success(processedProduct, '商品更新成功')
   } catch (err) {
     console.error('❌ 更新商品失败:', err)
     if (err.code) console.error('Error Code:', err.code)

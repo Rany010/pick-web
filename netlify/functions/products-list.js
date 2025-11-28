@@ -1,5 +1,6 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
+import { processProductImages } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -68,11 +69,14 @@ export const handler = async (event, context) => {
     // 获取总数
     const total = await prisma.product.count({ where })
 
+    // 处理产品图片 URL，将 blobKey 转换为完整 URL
+    const processedProducts = products.map(product => processProductImages(product, context))
+
     console.log(`✅ [products-list] 成功查询到 ${products.length} 个商品，总数: ${total}，耗时: ${Date.now() - startTime}ms`)
 
     return success(
       {
-        products,
+        products: processedProducts,
         total,
         limit,
         offset
