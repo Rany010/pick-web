@@ -46,14 +46,14 @@ export const handler = async (event, context) => {
       where: { key },
       update: {
         value: valueToStore,
-        description,
-        type: type || 'string',
-        updatedAt: new Date()
+        description: description || null,
+        type: type || 'string'
+        // updatedAt 由 Prisma @updatedAt 自动处理
       },
       create: {
         key,
         value: valueToStore,
-        description,
+        description: description || null,
         type: type || 'string'
       }
     })
@@ -62,13 +62,24 @@ export const handler = async (event, context) => {
     return success(setting)
   } catch (err) {
     console.error('❌ [admin-setting-update] Error:', err)
+    console.error('❌ [admin-setting-update] Error message:', err.message)
+    console.error('❌ [admin-setting-update] Error code:', err.code)
+    console.error('❌ [admin-setting-update] Error stack:', err.stack)
     
     // 检查是否是 Prisma 的 "Table does not exist" 错误
     // Postgres error code for undefined_table is 42P01, but Prisma might wrap it
     if (err.message && err.message.includes('does not exist')) {
          return error('Database table not found. Please run migrations.', 500, err.message)
     }
+    
+    // Prisma specific errors
+    if (err.code === 'P2002') {
+      return error('Unique constraint violation', 400, err.message)
+    }
+    if (err.code === 'P2025') {
+      return error('Record not found', 404, err.message)
+    }
 
-    return error('Internal server error', 500, err.message)
+    return error('Internal server error: ' + (err.message || 'Unknown error'), 500)
   }
 }
