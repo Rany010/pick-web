@@ -450,23 +450,40 @@ const loadData = async () => {
     ])
     
     // 处理 About 数据
+    console.log('📝 [Home] About API 原始响应:', aboutRes)
+    console.log('📝 [Home] About API 响应类型:', typeof aboutRes)
+    
     if (aboutRes) {
         let settings = aboutRes
         if (typeof aboutRes === 'string') {
+            console.log('📝 [Home] About 数据是字符串，尝试解析 JSON...')
             try {
                 settings = JSON.parse(aboutRes)
+                console.log('📝 [Home] JSON 解析成功:', settings)
             } catch (e) {
+                console.error('❌ [Home] JSON 解析失败:', e)
                 settings = {}
             }
         }
+        
+        console.log('📝 [Home] 处理后的 settings:', settings)
+        console.log('📝 [Home] settings.title:', settings.title)
+        console.log('📝 [Home] settings.content:', settings.content)
+        console.log('📝 [Home] settings.imageUrl:', settings.imageUrl)
+        console.log('📝 [Home] settings.features:', settings.features)
+        
         if (settings.title) aboutData.value.title = settings.title
         if (settings.content) aboutData.value.content = settings.content
         if (settings.imageUrl) aboutData.value.imageUrl = settings.imageUrl
         if (settings.features) aboutData.value.features = settings.features
+        
+        console.log('✅ [Home] 更新后的 aboutData:', JSON.stringify(aboutData.value, null, 2))
+    } else {
+        console.warn('⚠️ [Home] About API 返回空值，使用默认数据')
     }
 
-      console.log(`📦 [Home] 商品API响应:`, productsRes)
-      console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
+    console.log(`📦 [Home] 商品API响应:`, productsRes)
+    console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
   
       // 处理商品数据
       if (productsRes?.products) {
