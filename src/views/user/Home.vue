@@ -123,7 +123,6 @@
             v-for="product in featuredProducts" 
             :key="product.id"
             :product="product"
-            class="fade-in"
           />
         </div>
         
@@ -140,43 +139,19 @@
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center gap-12">
           <div class="md:w-1/2 fade-in">
-            <img src="https://picsum.photos/seed/about/600/400" alt="About Us" class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover">
+            <img :src="getImageUrl(aboutData.imageUrl)" alt="About Us" class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover">
           </div>
           <div class="md:w-1/2 fade-in" style="transition-delay: 0.2s;">
-            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-6">About PickleBall Hub</h2>
-            <p class="text-gray-700 text-lg mb-4">
-              PickleBall Hub is your premier destination for high-quality pickleball equipment. We're passionate about the fastest-growing sport in America and committed to providing players of all levels with the best gear to enhance their performance.
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-6">{{ aboutData.title }}</h2>
+            <p v-for="(paragraph, idx) in aboutData.content" :key="idx" class="text-gray-700 text-lg mb-4">
+              {{ paragraph }}
             </p>
-            <p class="text-gray-700 text-lg mb-6">
-              Our products undergo rigorous quality testing and are carefully selected to ensure durability, performance, and value. Whether you're a beginner or a seasoned pro, we have everything you need to excel on the court.
-            </p>
-            <div class="grid grid-cols-2 gap-6 mb-8">
-              <div class="flex items-start">
+            <div class="grid grid-cols-2 gap-6 mb-8 mt-6">
+              <div v-for="(feature, idx) in aboutData.features" :key="idx" class="flex items-start">
                 <div class="text-primary text-2xl mr-3">✓</div>
                 <div>
-                  <h4 class="font-bold text-lg mb-1">Premium Quality</h4>
-                  <p class="text-gray-600">USAPA approved equipment</p>
-                </div>
-              </div>
-              <div class="flex items-start">
-                <div class="text-primary text-2xl mr-3">✓</div>
-                <div>
-                  <h4 class="font-bold text-lg mb-1">Expert Selection</h4>
-                  <p class="text-gray-600">Curated by professionals</p>
-                </div>
-              </div>
-              <div class="flex items-start">
-                <div class="text-primary text-2xl mr-3">✓</div>
-                <div>
-                  <h4 class="font-bold text-lg mb-1">Fast Shipping</h4>
-                  <p class="text-gray-600">Quick delivery nationwide</p>
-                </div>
-              </div>
-              <div class="flex items-start">
-                <div class="text-primary text-2xl mr-3">✓</div>
-                <div>
-                  <h4 class="font-bold text-lg mb-1">Great Service</h4>
-                  <p class="text-gray-600">Dedicated support team</p>
+                  <h4 class="font-bold text-lg mb-1">{{ feature.title }}</h4>
+                  <p class="text-gray-600">{{ feature.description }}</p>
                 </div>
               </div>
             </div>
@@ -336,6 +311,7 @@ import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
 import { getProductsList, getBanners } from '../../api/products'
+import { getSetting } from '../../api/settings'
 
 // Form data
 const form = ref({
@@ -351,6 +327,29 @@ const products = ref([])
 const banners = ref([])
 const loading = ref(false)
 const error = ref(null)
+
+// About Data - with default fallback
+const aboutData = ref({
+  title: 'About PickleBall Hub',
+  content: [
+    "PickleBall Hub is your premier destination for high-quality pickleball equipment. We're passionate about the fastest-growing sport in America and committed to providing players of all levels with the best gear to enhance their performance.",
+    "Our products undergo rigorous quality testing and are carefully selected to ensure durability, performance, and value. Whether you're a beginner or a seasoned pro, we have everything you need to excel on the court."
+  ],
+  imageUrl: 'https://picsum.photos/seed/about/600/400',
+  features: [
+    { title: 'Premium Quality', description: 'USAPA approved equipment' },
+    { title: 'Expert Selection', description: 'Curated by professionals' },
+    { title: 'Fast Shipping', description: 'Quick delivery nationwide' },
+    { title: 'Great Service', description: 'Dedicated support team' }
+  ]
+})
+
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return 'https://picsum.photos/seed/about/600/400'
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) return imageUrl
+  if (imageUrl.startsWith('/')) return imageUrl
+  return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
+}
 
 // Featured products (show top 3 products, backend already sorts by isFeatured desc)
 const featuredProducts = computed(() => {
@@ -369,8 +368,7 @@ const activeBanner = computed(() => {
   return null
 })
 
-// 解析折扣标签 - subtitle 格式支持 "副标题|促销标题|折扣内容"
-// 例如: "Elevate Your Game|Special Offer|Up to 20% OFF"
+// 解析折扣标签
 const bannerPromoTag = computed(() => {
   if (!activeBanner.value?.subtitle) return null
   const parts = activeBanner.value.subtitle.split('|')
@@ -435,8 +433,8 @@ const loadData = async () => {
   console.log('🚀 [Home] 开始加载数据...')
   
   try {
-    // 并行加载 Products 和 Banners，提升性能
-    const [productsRes, bannersRes] = await Promise.all([
+    // 并行加载 Products, Banners, 和 Settings
+    const [productsRes, bannersRes, aboutRes] = await Promise.all([
       getProductsList('all', 20, 0).catch(err => {
         console.error('❌ [Home] 加载商品失败:', err)
         return { products: [] }
@@ -444,49 +442,61 @@ const loadData = async () => {
       getBanners().catch(err => {
         console.error('❌ [Home] 加载 Banner 失败:', err)
         return { success: false, data: [] }
+      }),
+      getSetting('about_us').catch(err => {
+        console.error('❌ [Home] 加载 About 设置失败:', err)
+        return null
       })
     ])
     
-    console.log(`📦 [Home] 商品API响应:`, productsRes)
-    console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
-
-    // 处理商品数据
-    // 后端 API 已经返回完整 URL，直接使用即可
-    if (productsRes?.products) {
-      console.log('📦 [Home] 原始商品列表:', productsRes.products)
-      products.value = productsRes.products.map(p => ({
-        id: p.id,
-        name: p.nameEn,
-        slug: p.slug,
-        category: p.category?.slug || 'unknown',
-        description: p.description,
-        price: Number(p.price),
-        originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
-        rating: Number(p.rating),
-        reviewCount: p.reviewCount,
-        badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-        image: p.images[0]?.imageUrl || '/placeholder-product.svg', // 后端已返回完整 URL
-        images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'), // 后端已返回完整 URL
-        features: p.features || [],
-        specifications: p.specifications || {},
-        stock: p.stock,
-        isFeatured: p.isFeatured,
-        isNew: p.isNew
-      }))
-      console.log(`✅ [Home] 成功处理 ${products.value.length} 个商品`)
-      console.log('📦 [Home] 处理后的商品数据 (前3个):', products.value.slice(0, 3))
-      console.log('📦 [Home] featuredProducts 计算属性值:', featuredProducts.value)
-    } else {
-      console.warn('⚠️ [Home] API响应中未找到 products 字段:', productsRes)
+    // 处理 About 数据
+    if (aboutRes) {
+        let settings = aboutRes
+        if (typeof aboutRes === 'string') {
+            try {
+                settings = JSON.parse(aboutRes)
+            } catch (e) {
+                settings = {}
+            }
+        }
+        if (settings.title) aboutData.value.title = settings.title
+        if (settings.content) aboutData.value.content = settings.content
+        if (settings.imageUrl) aboutData.value.imageUrl = settings.imageUrl
+        if (settings.features) aboutData.value.features = settings.features
     }
 
+      console.log(`📦 [Home] 商品API响应:`, productsRes)
+      console.log(`🖼️ [Home] Banner API响应:`, bannersRes)
+  
+      // 处理商品数据
+      if (productsRes?.products) {
+        products.value = productsRes.products.map(p => ({
+          id: p.id,
+          name: p.nameEn,
+          slug: p.slug,
+          category: p.category?.slug || 'unknown',
+          description: p.description,
+          price: Number(p.price),
+          originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+          rating: Number(p.rating),
+          reviewCount: p.reviewCount,
+          badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
+          image: p.images[0]?.imageUrl || '/placeholder-product.svg', 
+          images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'),
+          features: p.features || [],
+          specifications: p.specifications || {},
+          stock: p.stock,
+          isFeatured: p.isFeatured,
+          isNew: p.isNew
+        }))
+      } else {
+        console.warn('⚠️ [Home] API响应中未找到 products 字段:', productsRes)
+      }
+
     // 处理 Banner 数据
-    // 后端 API 已经返回完整 URL，直接使用即可
     if (bannersRes.success && Array.isArray(bannersRes.data)) {
       banners.value = bannersRes.data
-      console.log(`✅ [Home] 成功加载 ${banners.value.length} 个 Banner`)
     } else {
-      console.warn('⚠️ [Home] 获取 Banners 失败:', bannersRes.message || 'Unknown error')
       banners.value = []
     }
   } catch (err) {
@@ -509,7 +519,6 @@ const handleScroll = () => {
   fadeElements.forEach(element => {
     const elementTop = element.getBoundingClientRect().top
     const elementVisible = 150
-    // console.log('👀 Checking element:', element, 'Top:', elementTop, 'Threshold:', window.innerHeight - elementVisible)
     if (elementTop < window.innerHeight - elementVisible) {
       element.classList.add('opacity-100', 'translate-y-0')
       element.classList.remove('opacity-0', 'translate-y-10')
@@ -537,7 +546,6 @@ const handleSubmit = () => {
 
 const handleImageError = (event) => {
   console.error('🖼️ Banner 图片加载失败:', event.target.src)
-  // 回退到默认图片
   event.target.src = 'https://picsum.photos/seed/hero/600/400'
 }
 
@@ -593,4 +601,3 @@ onUnmounted(() => {
   opacity: 0;
 }
 </style>
-

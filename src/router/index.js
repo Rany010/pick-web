@@ -8,6 +8,7 @@ import InitData from '../views/admin/InitData.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import ProductManage from '../views/admin/ProductManage.vue'
 import BannerManage from '../views/admin/BannerManage.vue'
+import AboutManage from '../views/admin/AboutManage.vue'
 
 const routes = [
   // 用户端路由
@@ -55,6 +56,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/admin/about',
+    name: 'AboutManage',
+    component: AboutManage,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/admin/init',
     name: 'InitData',
     component: InitData,
@@ -93,4 +100,3 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
-

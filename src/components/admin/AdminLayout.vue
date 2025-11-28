@@ -24,6 +24,13 @@
               >
                 Banners
               </router-link>
+              <router-link
+                to="/admin/about"
+                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                :class="isActive('/admin/about') ? 'border-orange-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
+              >
+                About Us
+              </router-link>
             </div>
           </div>
 
@@ -59,6 +66,13 @@
           :class="isActive('/admin/banners') ? 'border-orange-500 text-orange-700 bg-orange-50' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'"
         >
           Banners
+        </router-link>
+        <router-link
+          to="/admin/about"
+          class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors"
+          :class="isActive('/admin/about') ? 'border-orange-500 text-orange-700 bg-orange-50' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'"
+        >
+          About Us
         </router-link>
       </div>
     </div>
