@@ -17,18 +17,22 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const setting = await prisma.setting.findUnique({
-      where: { key }
-    })
+    console.log(`🔍 [get-setting] Fetching setting for key: ${key}`)
+    
+    let setting = null
+    try {
+        setting = await prisma.setting.findUnique({
+            where: { key }
+        })
+        console.log(`✅ [get-setting] Found setting:`, setting ? 'yes' : 'no')
+    } catch (dbError) {
+        console.error(`❌ [get-setting] Database query failed:`, dbError)
+        // Return 404 or empty success instead of 500 if table doesn't exist or query fails
+        // This allows the frontend to fallback to defaults gracefully
+        return success(null, 'Setting not found (DB error)') 
+    }
 
     // 如果 value 存储的是 JSON 字符串，尝试解析它
-    // 但通常设置可能就是字符串，或者调用者自己解析
-    // 为了方便，我们原样返回，如果需要解析可以在前端做
-    // 或者是，我们尝试解析，如果是合法的 JSON 对象则返回对象
-    // 这里为了通用性，返回 raw string 比较好，或者前端自己处理。
-    // 但是考虑到 Admin 页面保存时是 JSON.stringify 的，如果前端获取时能自动 parse 会方便些。
-    // 这里简单处理：如果 type 是 'json'，尝试 parse
-    
     let result = setting ? setting.value : null
     
     if (setting && setting.type === 'json' && setting.value) {
