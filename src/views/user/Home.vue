@@ -138,10 +138,15 @@
     <section id="about" class="py-16 bg-secondary/5">
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center gap-12">
-          <div class="md:w-1/2 fade-in">
-            <img :src="getImageUrl(aboutData.imageUrl)" alt="About Us" class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover">
+          <div class="md:w-1/2">
+            <img 
+              :src="getImageUrl(aboutData.imageUrl)" 
+              alt="About Us" 
+              class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover"
+              @error="handleAboutImageError"
+            >
           </div>
-          <div class="md:w-1/2 fade-in" style="transition-delay: 0.2s;">
+          <div class="md:w-1/2">
             <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-6">{{ aboutData.title }}</h2>
             <p v-for="(paragraph, idx) in aboutData.content" :key="idx" class="text-gray-700 text-lg mb-4">
               {{ paragraph }}
@@ -574,6 +579,11 @@ const handleImageError = (event) => {
 
 const handleImageLoad = (event) => {
   console.log('🖼️ Banner 图片加载成功')
+}
+
+const handleAboutImageError = (event) => {
+  console.error('🖼️ About 图片加载失败:', event.target.src)
+  event.target.src = 'https://picsum.photos/seed/about/600/400'
 }
 
 onMounted(async () => {
