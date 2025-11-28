@@ -3,6 +3,9 @@ import { success, error, options } from './utils/response'
 import { requireAuth } from './utils/auth'
 
 export const handler = async (event, context) => {
+  // 添加请求日志
+  console.log(`📝 [admin-setting-update] Method: ${event.httpMethod}`)
+
   if (event.httpMethod === 'OPTIONS') {
     return options()
   }
@@ -14,12 +17,16 @@ export const handler = async (event, context) => {
   // 验证管理员权限
   const auth = requireAuth(event)
   if (!auth.isAuthorized) {
+    console.warn(`⚠️ [admin-setting-update] Unauthorized access attempt: ${auth.error}`)
     return error(auth.error, 401)
   }
 
   try {
+    console.log(`📝 [admin-setting-update] Parsing body...`)
     const data = JSON.parse(event.body)
     const { key, value, description, type } = data
+    
+    console.log(`📝 [admin-setting-update] Updating key: ${key}, Type: ${type}`)
 
     if (!key || value === undefined) {
       return error('Missing required fields: key, value')
@@ -32,6 +39,8 @@ export const handler = async (event, context) => {
     } else if (typeof value !== 'string') {
         valueToStore = String(value)
     }
+
+    console.log(`📝 [admin-setting-update] Value to store (first 50 chars): ${valueToStore.substring(0, 50)}...`)
 
     const setting = await prisma.setting.upsert({
       where: { key },
@@ -49,10 +58,17 @@ export const handler = async (event, context) => {
       }
     })
 
+    console.log(`✅ [admin-setting-update] Successfully updated setting: ${key}`)
     return success(setting)
   } catch (err) {
-    console.error('Update setting error:', err)
+    console.error('❌ [admin-setting-update] Error:', err)
+    
+    // 检查是否是 Prisma 的 "Table does not exist" 错误
+    // Postgres error code for undefined_table is 42P01, but Prisma might wrap it
+    if (err.message && err.message.includes('does not exist')) {
+         return error('Database table not found. Please run migrations.', 500, err.message)
+    }
+
     return error('Internal server error', 500, err.message)
   }
 }
-
