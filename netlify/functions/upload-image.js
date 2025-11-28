@@ -63,7 +63,17 @@ export const handler = async (event, context) => {
       const { getStore } = await import('@netlify/blobs')
       
       // 获取存储实例 (store name: 'product-images')
-      const store = getStore('product-images')
+      // 显式传递 siteID 和 token 以解决环境配置问题
+      const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID
+      const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN
+      
+      console.log(`[Debug] SiteID exists: ${!!siteID}, Token exists: ${!!token}`)
+
+      const store = getStore({
+        name: 'product-images',
+        siteID,
+        token
+      })
       
       // 准备数据：从 base64 转换为 Buffer
       // data:image/jpeg;base64,/9j/4AAQSkZJRgABA...

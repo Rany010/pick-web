@@ -32,7 +32,12 @@ export const handler = async (event, context) => {
 
   try {
     console.log(`🔍 [get-image] 请求图片 key: ${key}`)
-    const store = getStore('product-images')
+    // 显式传递 siteID 和 token 以解决环境配置问题
+    const store = getStore({
+        name: 'product-images',
+        siteID: process.env.NETLIFY_SITE_ID || process.env.SITE_ID,
+        token: process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN
+    })
     
     // 先检查文件是否存在
     console.log(`🔍 [get-image] 获取 metadata...`)
