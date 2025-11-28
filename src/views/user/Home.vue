@@ -3,7 +3,7 @@
     <Navbar />
     
     <!-- Hero Section with Banner Carousel -->
-    <section class="pt-20 md:pt-24 pb-10 md:pb-12 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
+    <section class="pt-20 md:pt-24 pb-6 md:pb-8 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2">
           
@@ -126,15 +126,15 @@
     </section>
 
     <!-- Featured Products Section -->
-    <section class="py-10 bg-white">
+    <section class="py-8 bg-white">
       <div class="container mx-auto px-4">
-        <div class="text-center mb-8 fade-in">
-          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-2">Featured Products</h2>
-          <p class="text-gray-600 max-w-2xl mx-auto">Explore our selection of top-rated pickleball equipment</p>
+        <div class="text-center mb-6 fade-in">
+          <h2 class="text-[clamp(1.5rem,4vw,2rem)] font-bold text-dark mb-1">Featured Products</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto text-sm">Explore our selection of top-rated pickleball equipment</p>
         </div>
         
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <ProductCard 
             v-for="product in featuredProducts" 
             :key="product.id"
@@ -142,7 +142,7 @@
           />
         </div>
         
-        <div class="text-center mt-8">
+        <div class="text-center mt-6">
           <router-link to="/products" class="btn-primary inline-block">
             View All Products
           </router-link>
@@ -151,28 +151,28 @@
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-10 bg-secondary/5">
+    <section id="about" class="py-8 bg-secondary/5">
       <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row items-center gap-8">
+        <div class="flex flex-col md:flex-row items-center gap-6">
           <div class="md:w-1/2">
             <img 
               :src="getImageUrl(aboutData.imageUrl)" 
               alt="About Us" 
-              class="rounded-xl shadow-xl w-full h-[300px] md:h-[400px] object-cover"
+              class="rounded-xl shadow-xl w-full h-[250px] md:h-[320px] object-cover"
               @error="handleAboutImageError"
             >
           </div>
           <div class="md:w-1/2">
-            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-6">{{ aboutData.title }}</h2>
-            <p v-for="(paragraph, idx) in aboutData.content" :key="idx" class="text-gray-700 text-lg mb-4">
+            <h2 class="text-[clamp(1.5rem,4vw,2rem)] font-bold text-dark mb-4">{{ aboutData.title }}</h2>
+            <p v-for="(paragraph, idx) in aboutData.content" :key="idx" class="text-gray-700 mb-3">
               {{ paragraph }}
             </p>
-            <div class="grid grid-cols-2 gap-6 mb-8 mt-6">
+            <div class="grid grid-cols-2 gap-4 mt-4">
               <div v-for="(feature, idx) in aboutData.features" :key="idx" class="flex items-start">
-                <div class="text-primary text-2xl mr-3">✓</div>
+                <div class="text-primary text-xl mr-2">✓</div>
                 <div>
-                  <h4 class="font-bold text-lg mb-1">{{ feature.title }}</h4>
-                  <p class="text-gray-600">{{ feature.description }}</p>
+                  <h4 class="font-bold mb-0.5">{{ feature.title }}</h4>
+                  <p class="text-gray-600 text-sm">{{ feature.description }}</p>
                 </div>
               </div>
             </div>
@@ -182,14 +182,14 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-10 bg-white">
+    <section id="contact" class="py-8 bg-white">
       <div class="container mx-auto px-4">
-        <div class="text-center mb-8 fade-in">
-          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-2">Contact Us</h2>
-          <p class="text-gray-600 max-w-2xl mx-auto">Have questions? We're here to help!</p>
+        <div class="text-center mb-6 fade-in">
+          <h2 class="text-[clamp(1.5rem,4vw,2rem)] font-bold text-dark mb-1">Contact Us</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto text-sm">Have questions? We're here to help!</p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
           <!-- Contact Form -->
           <div class="bg-white rounded-xl shadow-lg p-8 fade-in">
             <h3 class="text-2xl font-bold mb-6">Send us a message</h3>
