@@ -32,8 +32,14 @@
           </div>
         </div>
         
+        <!-- Loading State -->
+        <div v-if="loading" class="text-center py-16">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+          <p class="mt-4 text-gray-600">Loading products...</p>
+        </div>
+        
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <ProductCard 
             v-for="product in filteredProducts" 
             :key="product.id"
@@ -41,8 +47,8 @@
           />
         </div>
         
-        <!-- Empty State -->
-        <div v-if="filteredProducts.length === 0" class="text-center py-16">
+        <!-- Empty State - 只在加载完成且确实没有产品时显示 -->
+        <div v-else class="text-center py-16">
           <div class="text-6xl mb-4">📦</div>
           <h3 class="text-2xl font-bold text-dark mb-2">No products found</h3>
           <p class="text-gray-600">Try selecting a different category</p>
@@ -97,10 +103,7 @@ const loadProducts = async () => {
   loading.value = true
   error.value = null
   try {
-    console.log('🚀 [Products] 开始加载商品列表...')
-    const startTime = Date.now()
     const response = await getProductsList('all', 50, 0)
-    // 后端 API 已经返回完整 URL，直接使用即可
     products.value = response.products.map(p => ({
       id: p.id,
       name: p.nameEn,
@@ -112,18 +115,17 @@ const loadProducts = async () => {
       rating: Number(p.rating),
       reviewCount: p.reviewCount,
       badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-      image: p.images[0]?.imageUrl || '/placeholder-product.svg', // 后端已返回完整 URL
-      images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'), // 后端已返回完整 URL
+      image: p.images[0]?.imageUrl || '/placeholder-product.svg',
+      images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'),
       features: p.features || [],
       specifications: p.specifications || {},
       stock: p.stock,
       isFeatured: p.isFeatured,
       isNew: p.isNew
     }))
-    console.log(`✅ [Products] 加载完成，共 ${products.value.length} 个商品，耗时: ${Date.now() - startTime}ms`)
   } catch (err) {
     error.value = err.message
-    console.error('加载商品失败:', err)
+    console.error('Failed to load products:', err)
   } finally {
     loading.value = false
   }

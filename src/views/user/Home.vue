@@ -7,7 +7,20 @@
       <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div class="md:w-1/2">
           
-          <template v-if="activeBanner">
+          <!-- 加载中状态 -->
+          <template v-if="loading">
+            <div class="animate-pulse">
+              <div class="h-12 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="h-8 bg-gray-200 rounded w-1/2 mb-8"></div>
+              <div class="flex gap-4">
+                <div class="h-12 bg-gray-200 rounded-full w-32"></div>
+                <div class="h-12 bg-gray-200 rounded-full w-32"></div>
+              </div>
+            </div>
+          </template>
+          
+          <!-- Banner 内容 -->
+          <template v-else-if="activeBanner">
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4 transition-opacity duration-500">
               {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
               <span class="text-primary" v-if="bannerSubtitle">{{ bannerSubtitle }}</span>
@@ -26,6 +39,7 @@
             </div>
           </template>
           
+          <!-- 默认内容（无 Banner 时） -->
           <template v-else>
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
               Premium Pickleball Equipment,<br>
@@ -46,7 +60,10 @@
           <div class="relative">
             <!-- Banner 图片轮播 -->
             <div class="relative overflow-hidden rounded-xl shadow-2xl">
-              <transition name="banner-fade" mode="out-in">
+              <!-- 加载中骨架屏 -->
+              <div v-if="loading" class="w-full h-[300px] md:h-[400px] bg-gray-200 animate-pulse"></div>
+              <!-- 实际 Banner 图片 -->
+              <transition v-else name="banner-fade" mode="out-in">
                 <img 
                   :key="currentBannerIndex"
                   :src="activeBanner?.imageUrl || 'https://picsum.photos/seed/hero/600/400'" 
@@ -329,7 +346,7 @@ const form = ref({
 // Products and Banners data
 const products = ref([])
 const banners = ref([])
-const loading = ref(false)
+const loading = ref(true)
 const error = ref(null)
 
 // About Data - with default fallback
@@ -546,6 +563,9 @@ const handleAboutImageError = (event) => {
 }
 
 onMounted(async () => {
+  // 确保页面从顶部开始显示
+  window.scrollTo(0, 0)
+  
   window.addEventListener('scroll', handleScroll)
   
   // Load products and banners
@@ -554,7 +574,7 @@ onMounted(async () => {
   // 启动 Banner 自动轮播
   startBannerInterval()
   
-  // Trigger initial animation
+  // Trigger initial animation for elements in viewport
   setTimeout(() => {
     handleScroll()
   }, 100)

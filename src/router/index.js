@@ -72,16 +72,15 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else if (to.hash) {
+    // 如果有 hash（如 #about），滚动到对应元素
+    if (to.hash) {
       return {
         el: to.hash,
         behavior: 'smooth',
       }
-    } else {
-      return { top: 0 }
     }
+    // 其他情况，始终滚动到顶部
+    return { top: 0, behavior: 'instant' }
   },
 })
 
