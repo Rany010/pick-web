@@ -2,7 +2,16 @@
   <div class="min-h-screen bg-light">
     <Navbar />
     
-    <div v-if="product" class="pt-24 pb-16">
+    <!-- Loading State -->
+    <div v-if="loading" class="pt-32 pb-16 text-center">
+      <div class="container mx-auto px-4">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-gray-600">Loading product details...</p>
+      </div>
+    </div>
+    
+    <!-- Product Details -->
+    <div v-else-if="product" class="pt-24 pb-16">
       <div class="container mx-auto px-4">
         <!-- Breadcrumb -->
         <div class="mb-8 text-sm text-gray-600">
@@ -170,7 +179,7 @@ const productId = parseInt(route.params.id)
 
 const product = ref(null)
 const relatedProductsData = ref([])
-const loading = ref(false)
+const loading = ref(true) // 初始为 true，页面打开时显示加载状态
 const error = ref(null)
 const selectedImage = ref('')
 

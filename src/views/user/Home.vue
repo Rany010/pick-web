@@ -153,7 +153,14 @@
     <!-- About Section -->
     <section id="about" class="py-8 bg-secondary/5">
       <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row items-center gap-6">
+        <!-- Loading State for About Section -->
+        <div v-if="aboutLoading" class="text-center py-16">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+          <p class="mt-4 text-gray-600">Loading about us...</p>
+        </div>
+        
+        <!-- About Content -->
+        <div v-else class="flex flex-col md:flex-row items-center gap-6">
           <div class="md:w-1/2">
             <img 
               :src="getImageUrl(aboutData.imageUrl)" 
@@ -210,20 +217,15 @@ const banners = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-// About Data - with default fallback
+// About Section loading state - 初始为 true，避免显示默认内容
+const aboutLoading = ref(true)
+
+// About Data - 初始为空对象，避免显示默认内容
 const aboutData = ref({
-  title: 'About PickleBall Hub',
-  content: [
-    "PickleBall Hub is your premier destination for high-quality pickleball equipment. We're passionate about the fastest-growing sport in America and committed to providing players of all levels with the best gear to enhance their performance.",
-    "Our products undergo rigorous quality testing and are carefully selected to ensure durability, performance, and value. Whether you're a beginner or a seasoned pro, we have everything you need to excel on the court."
-  ],
-  imageUrl: 'https://picsum.photos/seed/about/600/400',
-  features: [
-    { title: 'Premium Quality', description: 'USAPA approved equipment' },
-    { title: 'Expert Selection', description: 'Curated by professionals' },
-    { title: 'Fast Shipping', description: 'Quick delivery nationwide' },
-    { title: 'Great Service', description: 'Dedicated support team' }
-  ]
+  title: '',
+  content: [],
+  imageUrl: '',
+  features: []
 })
 
 const getImageUrl = (imageUrl) => {
@@ -331,16 +333,45 @@ const loadData = async () => {
             }
         }
         
-        // 只有当数据非空时才覆盖默认值
-        if (settings.title) aboutData.value.title = settings.title
-        if (Array.isArray(settings.content) && settings.content.length > 0) {
-          aboutData.value.content = settings.content
+        // 设置从服务器获取的数据
+        aboutData.value = {
+          title: settings.title || 'About PickleBall Hub',
+          content: Array.isArray(settings.content) && settings.content.length > 0 
+            ? settings.content 
+            : [
+                "PickleBall Hub is your premier destination for high-quality pickleball equipment. We're passionate about the fastest-growing sport in America and committed to providing players of all levels with the best gear to enhance their performance.",
+                "Our products undergo rigorous quality testing and are carefully selected to ensure durability, performance, and value. Whether you're a beginner or a seasoned pro, we have everything you need to excel on the court."
+              ],
+          imageUrl: settings.imageUrl || 'https://picsum.photos/seed/about/600/400',
+          features: Array.isArray(settings.features) && settings.features.length > 0 
+            ? settings.features 
+            : [
+                { title: 'Premium Quality', description: 'USAPA approved equipment' },
+                { title: 'Expert Selection', description: 'Curated by professionals' },
+                { title: 'Fast Shipping', description: 'Quick delivery nationwide' },
+                { title: 'Great Service', description: 'Dedicated support team' }
+              ]
         }
-        if (settings.imageUrl) aboutData.value.imageUrl = settings.imageUrl
-        if (Array.isArray(settings.features) && settings.features.length > 0) {
-          aboutData.value.features = settings.features
+    } else {
+        // 如果没有获取到数据，使用默认值
+        aboutData.value = {
+          title: 'About PickleBall Hub',
+          content: [
+            "PickleBall Hub is your premier destination for high-quality pickleball equipment. We're passionate about the fastest-growing sport in America and committed to providing players of all levels with the best gear to enhance their performance.",
+            "Our products undergo rigorous quality testing and are carefully selected to ensure durability, performance, and value. Whether you're a beginner or a seasoned pro, we have everything you need to excel on the court."
+          ],
+          imageUrl: 'https://picsum.photos/seed/about/600/400',
+          features: [
+            { title: 'Premium Quality', description: 'USAPA approved equipment' },
+            { title: 'Expert Selection', description: 'Curated by professionals' },
+            { title: 'Fast Shipping', description: 'Quick delivery nationwide' },
+            { title: 'Great Service', description: 'Dedicated support team' }
+          ]
         }
     }
+    
+    // About 数据加载完成
+    aboutLoading.value = false
 
     // 处理商品数据
     if (productsRes?.products) {
