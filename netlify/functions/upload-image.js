@@ -57,6 +57,7 @@ export const handler = async (event, context) => {
     // ============================================
     // 方案 1: 优先使用 Netlify Blobs
     // ============================================
+    let blobErrorMessage = null
     try {
       // 动态导入 @netlify/blobs
       const { getStore } = await import('@netlify/blobs')
@@ -106,6 +107,7 @@ export const handler = async (event, context) => {
       }, '图片上传成功')
       
     } catch (blobError) {
+      blobErrorMessage = blobError.message || String(blobError)
       console.warn('⚠️ Netlify Blobs 上传失败:', blobError)
       // 继续尝试其他方案
     }
@@ -166,13 +168,13 @@ export const handler = async (event, context) => {
     
     let errorMessage = '图片上传失败：'
     if (!isCloudinaryConfigured) {
-      errorMessage += 'Netlify Blobs 上传失败，且未配置 Cloudinary。'
+      errorMessage += `Netlify Blobs 上传失败（${blobErrorMessage || '未知原因'}），且未配置 Cloudinary。`
     } else {
-      errorMessage += 'Netlify Blobs 和 Cloudinary 上传均失败。'
+      errorMessage += `Netlify Blobs（${blobErrorMessage || '未知原因'}）和 Cloudinary 上传均失败。`
     }
     
     console.error('❌ [upload-image] 所有存储方案均失败')
-    return error(errorMessage + ' 请检查 Netlify Blobs 配置或环境变量。', 500)
+    return error(errorMessage + ' 请检查 Netlify Blobs 配置或环境变量。', 500, { blobError: blobErrorMessage })
 
   } catch (err) {
     console.error('❌ 上传图片失败:', err)
