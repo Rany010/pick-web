@@ -453,6 +453,7 @@ const loadData = async () => {
     // 处理商品数据
     // 后端 API 已经返回完整 URL，直接使用即可
     if (productsRes?.products) {
+      console.log('📦 [Home] 原始商品列表:', productsRes.products)
       products.value = productsRes.products.map(p => ({
         id: p.id,
         name: p.nameEn,
@@ -472,7 +473,11 @@ const loadData = async () => {
         isFeatured: p.isFeatured,
         isNew: p.isNew
       }))
-      console.log(`✅ [Home] 成功加载 ${products.value.length} 个商品`)
+      console.log(`✅ [Home] 成功处理 ${products.value.length} 个商品`)
+      console.log('📦 [Home] 处理后的商品数据 (前3个):', products.value.slice(0, 3))
+      console.log('📦 [Home] featuredProducts 计算属性值:', featuredProducts.value)
+    } else {
+      console.warn('⚠️ [Home] API响应中未找到 products 字段:', productsRes)
     }
 
     // 处理 Banner 数据
@@ -504,6 +509,7 @@ const handleScroll = () => {
   fadeElements.forEach(element => {
     const elementTop = element.getBoundingClientRect().top
     const elementVisible = 150
+    // console.log('👀 Checking element:', element, 'Top:', elementTop, 'Threshold:', window.innerHeight - elementVisible)
     if (elementTop < window.innerHeight - elementVisible) {
       element.classList.add('opacity-100', 'translate-y-0')
       element.classList.remove('opacity-0', 'translate-y-10')
