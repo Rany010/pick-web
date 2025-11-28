@@ -48,13 +48,25 @@
             <div class="relative overflow-hidden rounded-xl shadow-2xl">
               <transition name="banner-fade" mode="out-in">
                 <img 
+                  v-if="activeBanner?.imageUrl"
                   :key="currentBannerIndex"
-                  :src="activeBanner?.imageUrl || 'https://picsum.photos/seed/hero/600/400'" 
-                  alt="Pickleball Equipment" 
+                  :src="activeBanner.imageUrl" 
+                  :alt="activeBanner.title || 'Pickleball Equipment'" 
                   class="w-full object-cover h-[300px] md:h-[400px]"
                   @error="handleImageError"
                   @load="handleImageLoad"
                 >
+                <div 
+                  v-else
+                  class="w-full h-[300px] md:h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+                >
+                  <div class="text-center text-gray-400">
+                    <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="text-sm">暂无 Banner 图片</p>
+                  </div>
+                </div>
               </transition>
             </div>
             
@@ -496,6 +508,13 @@ const loadData = async () => {
     // 处理 Banner 数据
     if (bannersRes.success && Array.isArray(bannersRes.data)) {
       banners.value = bannersRes.data
+      // 调试：打印每个 banner 的图片 URL
+      console.log('🖼️ [Home] Banner 数据:', banners.value.map(b => ({
+        id: b.id,
+        title: b.title,
+        imageUrl: b.imageUrl,
+        imageUrlType: b.imageUrl ? (b.imageUrl.startsWith('http') ? '完整URL' : b.imageUrl.startsWith('/') ? '相对路径' : 'blobKey') : '空'
+      })))
     } else {
       banners.value = []
     }
@@ -545,12 +564,37 @@ const handleSubmit = () => {
 }
 
 const handleImageError = (event) => {
-  console.error('🖼️ Banner 图片加载失败:', event.target.src)
-  event.target.src = 'https://picsum.photos/seed/hero/600/400'
+  console.error('🖼️ [Home] Banner 图片加载失败:', event.target.src)
+  console.error('🖼️ [Home] 当前 activeBanner:', activeBanner.value)
+  // 使用固定的占位图，而不是随机图片服务
+  // 如果占位图也加载失败，则隐藏图片元素
+  const placeholderSrc = '/placeholder-product.svg'
+  if (event.target.src !== placeholderSrc) {
+    event.target.src = placeholderSrc
+  } else {
+    // 如果占位图也加载失败，隐藏图片
+    event.target.style.display = 'none'
+    // 显示错误提示
+    const parent = event.target.parentElement
+    if (parent && !parent.querySelector('.error-message')) {
+      const errorDiv = document.createElement('div')
+      errorDiv.className = 'error-message absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400 text-sm'
+      errorDiv.textContent = '图片加载失败'
+      parent.appendChild(errorDiv)
+    }
+  }
 }
 
 const handleImageLoad = (event) => {
-  console.log('🖼️ Banner 图片加载成功')
+  console.log('🖼️ [Home] Banner 图片加载成功:', event.target.src)
+  // 移除错误提示（如果存在）
+  const parent = event.target.parentElement
+  if (parent) {
+    const errorMsg = parent.querySelector('.error-message')
+    if (errorMsg) {
+      errorMsg.remove()
+    }
+  }
 }
 
 onMounted(async () => {
