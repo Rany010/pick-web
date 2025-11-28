@@ -70,7 +70,7 @@ import { getProductsList, getCategoriesList } from '../../api/products'
 const selectedCategory = ref('all')
 const categories = ref([{ id: 'all', name: 'All Products', slug: 'all' }])
 const products = ref([])
-const loading = ref(false)
+const loading = ref(true) // 初始为 true，页面打开时显示加载状态
 const error = ref(null)
 
 const filteredProducts = computed(() => {
