@@ -234,14 +234,18 @@ const loadProduct = async () => {
   loading.value = true
   error.value = null
   try {
-    const response = await getProductDetail(productId)
+    // 并行加载商品详情和相关商品列表，提高加载速度
+    const [response, relatedResponse] = await Promise.all([
+      getProductDetail(productId),
+      getProductsList('all', 4, 0) // 先加载所有分类，避免等待商品详情
+    ])
+    
     product.value = transformProduct(response)
     selectedImage.value = product.value.images[0] || product.value.image
     
-    // Load related products
-    const relatedResponse = await getProductsList(product.value.category, 4, 0)
+    // 筛选相关商品：同类别且不是当前商品
     relatedProductsData.value = relatedResponse.products
-      .filter(p => p.id !== productId)
+      .filter(p => p.id !== productId && (!product.value.category || p.category?.slug === product.value.category))
       .slice(0, 3)
       .map(transformProduct)
   } catch (err) {
