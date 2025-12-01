@@ -32,6 +32,21 @@ export const getProductDetail = async (slugOrId) => {
   }
 }
 
+export const getRelatedProducts = async (productId, limit = 3) => {
+  try {
+    const response = await axios.get(`${API_BASE}/related-products`, {
+      params: {
+        productId,
+        limit
+      }
+    })
+    return response.data.data
+  } catch (error) {
+    console.error('Failed to fetch related products:', error)
+    throw error
+  }
+}
+
 export const getCategoriesList = async () => {
   try {
     const response = await axios.get(`${API_BASE}/categories-list`)

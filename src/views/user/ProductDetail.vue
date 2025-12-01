@@ -172,7 +172,7 @@ import { useRoute } from 'vue-router'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { getProductDetail, getProductsList } from '../../api/products'
+import { getProductDetail, getRelatedProducts } from '../../api/products'
 
 const route = useRoute()
 const productId = parseInt(route.params.id)
@@ -234,20 +234,21 @@ const loadProduct = async () => {
   loading.value = true
   error.value = null
   try {
-    // 并行加载商品详情和相关商品列表，提高加载速度
-    const [response, relatedResponse] = await Promise.all([
-      getProductDetail(productId),
-      getProductsList('all', 4, 0) // 先加载所有分类，避免等待商品详情
-    ])
-    
+    // 优化：使用专用的相关商品API，避免查询所有商品
+    // 1. 先获取商品详情
+    const response = await getProductDetail(productId)
     product.value = transformProduct(response)
     selectedImage.value = product.value.images[0] || product.value.image
     
-    // 筛选相关商品：同类别且不是当前商品
-    relatedProductsData.value = relatedResponse.products
-      .filter(p => p.id !== productId && (!product.value.category || p.category?.slug === product.value.category))
-      .slice(0, 3)
-      .map(transformProduct)
+    // 2. 并行获取相关商品（后端直接返回同类别商品，无需前端筛选）
+    getRelatedProducts(productId, 3)
+      .then(relatedProducts => {
+        relatedProductsData.value = relatedProducts.map(transformProduct)
+      })
+      .catch(err => {
+        console.warn('加载相关商品失败:', err)
+        relatedProductsData.value = [] // 失败时显示空列表，不影响主商品显示
+      })
   } catch (err) {
     error.value = err.message
     console.error('加载商品详情失败:', err)
