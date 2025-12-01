@@ -4,7 +4,7 @@
   >
     <div class="container mx-auto px-4 flex items-center justify-between">
       <!-- Logo -->
-      <router-link to="/" class="flex items-center space-x-2">
+      <router-link to="/" class="flex items-center space-x-2" @click="mobileMenuOpen = false">
         <span class="text-2xl">🏓</span>
         <span class="text-xl font-bold text-primary">PickleBall Hub</span>
       </router-link>

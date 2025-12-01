@@ -27,25 +27,35 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
             <!-- Product Images -->
             <div class="product-images">
-              <img 
-                :src="selectedImage" 
-                :alt="product.name" 
-                class="w-full h-80 object-cover rounded-lg mb-4"
-                loading="eager"
-              >
-              <div v-if="product.images.length > 1" class="flex gap-3 overflow-x-auto pb-2">
+              <div class="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
                 <img 
+                  :src="selectedImage" 
+                  :alt="product.name" 
+                  class="w-full h-full object-cover"
+                  width="800"
+                  height="800"
+                  loading="eager"
+                >
+              </div>
+              <div v-if="product.images.length > 1" class="flex gap-3 overflow-x-auto pb-2">
+                <div
                   v-for="(image, index) in product.images" 
                   :key="index"
-                  :src="image" 
-                  :alt="`${product.name} ${index + 1}`" 
                   :class="[
-                    'w-20 h-20 object-cover rounded-md cursor-pointer border-2 transition-all',
+                    'w-20 h-20 flex-shrink-0 rounded-md cursor-pointer border-2 transition-all overflow-hidden',
                     selectedImage === image ? 'border-primary' : 'border-transparent hover:border-primary'
                   ]"
-                  loading="lazy"
                   @click="selectedImage = image"
                 >
+                  <img 
+                    :src="image" 
+                    :alt="`${product.name} ${index + 1}`" 
+                    class="w-full h-full object-cover"
+                    width="80"
+                    height="80"
+                    loading="lazy"
+                  >
+                </div>
               </div>
             </div>
             
@@ -276,4 +286,5 @@ watch(() => route.params.id, () => {
   @apply bg-primary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-primary/90 hover:shadow-lg;
 }
 </style>
+
 
