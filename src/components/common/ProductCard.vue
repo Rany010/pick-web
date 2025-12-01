@@ -2,11 +2,13 @@
   <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
     <router-link :to="`/products/${product.id}`">
       <!-- Product Image -->
-      <div class="relative">
+      <div class="relative bg-gray-100">
         <img 
           :src="product.image" 
           :alt="product.name" 
           class="w-full h-64 object-cover"
+          loading="lazy"
+          decoding="async"
         >
         <div 
           v-if="product.badge" 

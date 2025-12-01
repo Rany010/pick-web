@@ -31,6 +31,7 @@
                 :src="selectedImage" 
                 :alt="product.name" 
                 class="w-full h-80 object-cover rounded-lg mb-4"
+                loading="eager"
               >
               <div v-if="product.images.length > 1" class="flex gap-3 overflow-x-auto pb-2">
                 <img 
@@ -42,6 +43,7 @@
                     'w-20 h-20 object-cover rounded-md cursor-pointer border-2 transition-all',
                     selectedImage === image ? 'border-primary' : 'border-transparent hover:border-primary'
                   ]"
+                  loading="lazy"
                   @click="selectedImage = image"
                 >
               </div>
