@@ -39,7 +39,7 @@
         </div>
         
         <!-- Products Grid -->
-        <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <ProductCard 
             v-for="product in filteredProducts" 
             :key="product.id"

@@ -32,8 +32,8 @@
                   :src="selectedImage" 
                   :alt="product.name" 
                   class="w-full h-full object-cover"
-                  width="800"
-                  height="800"
+                  width="500"
+                  height="500"
                   loading="eager"
                 >
               </div>
@@ -151,7 +151,7 @@
         <!-- Related Products -->
         <div class="mt-16">
           <h2 class="text-2xl font-bold mb-8">You May Also Like</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <ProductCard 
               v-for="relatedProduct in relatedProducts" 
               :key="relatedProduct.id"
@@ -253,7 +253,7 @@ const loadProduct = async () => {
     selectedImage.value = product.value.images[0] || product.value.image
     
     // 2. 并行获取相关商品（后端直接返回同类别商品，无需前端筛选）
-    getRelatedProducts(productId, 3)
+    getRelatedProducts(productId, 4)
       .then(relatedProducts => {
         relatedProductsData.value = relatedProducts.map(transformProduct)
       })

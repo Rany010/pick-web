@@ -7,8 +7,8 @@
           :src="product.image" 
           :alt="product.name" 
           class="w-full h-full object-cover"
-          width="800"
-          height="800"
+          width="500"
+          height="500"
           loading="lazy"
           decoding="async"
         >
