@@ -235,9 +235,9 @@ const getImageUrl = (imageUrl) => {
   return `/.netlify/functions/get-image?key=${encodeURIComponent(imageUrl)}`
 }
 
-// Featured products (show top 3 products, backend already sorts by isFeatured desc)
+// Featured products (show top 4 products, backend already sorts by isFeatured desc)
 const featuredProducts = computed(() => {
-  return products.value.slice(0, 3)
+  return products.value.slice(0, 4)
 })
 
 // Banner 轮播相关
