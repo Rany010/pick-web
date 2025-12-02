@@ -1,6 +1,7 @@
 import prisma from './utils/db'
 import { success, error, options } from './utils/response'
 import { requireAuth } from './utils/auth'
+import { deleteBlob } from './utils/image.js'
 
 export const handler = async (event, context) => {
   // 添加请求日志
@@ -30,6 +31,32 @@ export const handler = async (event, context) => {
 
     if (!key || value === undefined) {
       return error('Missing required fields: key, value')
+    }
+
+    // 获取现有设置（用于检查是否需要删除旧图片）
+    const existingSetting = await prisma.setting.findUnique({
+      where: { key }
+    })
+
+    // 如果是关于我们设置，检查是否需要删除旧图片
+    if (key === 'about_us' && existingSetting && type === 'json' && typeof value === 'object') {
+      try {
+        const oldValue = JSON.parse(existingSetting.value)
+        const newImageUrl = value.imageUrl
+        const oldImageUrl = oldValue.imageUrl
+
+        // 如果图片 URL 发生变化，删除旧图片 Blob
+        if (oldImageUrl && newImageUrl && oldImageUrl !== newImageUrl) {
+          console.log(`🗑️ 删除关于我们页面的旧图片`)
+          const deleted = await deleteBlob(oldImageUrl)
+          if (deleted) {
+            console.log(`✅ 已删除旧图片 Blob`)
+          }
+        }
+      } catch (e) {
+        // 如果解析失败，忽略（可能是首次创建）
+        console.log(`⚠️ 无法解析现有设置值，跳过图片删除检查`)
+      }
     }
 
     // 如果 type 是 json，且 value 是对象，则 stringify

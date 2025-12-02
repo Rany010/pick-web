@@ -1,7 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
-import { normalizeImageUrl, processBannerImage } from './utils/image.js'
+import { normalizeImageUrl, processBannerImage, deleteBlob } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -31,6 +31,15 @@ export const handler = async (event, context) => {
       return error('Banner ID is required', 400)
     }
 
+    // 获取现有 Banner 信息
+    const existingBanner = await prisma.banner.findUnique({
+      where: { id }
+    })
+
+    if (!existingBanner) {
+      return error('Banner not found', 404)
+    }
+
     const updateData = {}
     if (data.title !== undefined) updateData.title = data.title
     if (data.subtitle !== undefined) updateData.subtitle = data.subtitle
@@ -41,6 +50,15 @@ export const handler = async (event, context) => {
         return error('Invalid image URL. Please upload image to Netlify Blobs first.', 400)
       }
       updateData.imageUrl = normalizedImageUrl
+
+      // 如果图片 URL 发生变化，删除旧图片 Blob
+      if (existingBanner.imageUrl && existingBanner.imageUrl !== normalizedImageUrl) {
+        console.log(`🗑️ 删除被替换的旧轮播图图片`)
+        const deleted = await deleteBlob(existingBanner.imageUrl)
+        if (deleted) {
+          console.log(`✅ 已删除旧轮播图图片 Blob`)
+        }
+      }
     }
     if (data.linkUrl !== undefined) updateData.linkUrl = data.linkUrl
     if (data.buttonText !== undefined) updateData.buttonText = data.buttonText

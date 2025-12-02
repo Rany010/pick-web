@@ -1,7 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
-import { normalizeProductImages, processProductImages } from './utils/image.js'
+import { normalizeProductImages, processProductImages, deleteBlobsBatch } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -94,13 +94,31 @@ export const handler = async (event, context) => {
     // 如果提供了图片数据，更新图片
     // 规范化图片 URL，确保只存储 blobKey
     if (data.images && Array.isArray(data.images)) {
-      // 删除现有图片
-      await prisma.productImage.deleteMany({
+      // 获取现有图片
+      const existingImages = await prisma.productImage.findMany({
         where: { productId: productId }
       })
 
-      // 规范化图片 URL
+      // 规范化新图片 URL
       const normalizedImages = normalizeProductImages(data.images)
+      const newImageUrls = normalizedImages.map(img => img.imageUrl).filter(Boolean)
+
+      // 找出需要删除的旧图片（不在新图片列表中的）
+      const oldImageUrls = existingImages
+        .map(img => img.imageUrl)
+        .filter(url => url && !newImageUrls.includes(url))
+
+      // 删除不再使用的旧图片 Blob
+      if (oldImageUrls.length > 0) {
+        console.log(`🗑️ 删除 ${oldImageUrls.length} 张被替换的旧图片`)
+        const deleteResult = await deleteBlobsBatch(oldImageUrls)
+        console.log(`📊 旧图片 Blob 删除结果: 成功 ${deleteResult.success}, 失败 ${deleteResult.failed}`)
+      }
+
+      // 删除现有图片记录
+      await prisma.productImage.deleteMany({
+        where: { productId: productId }
+      })
 
       // 创建新图片记录
       await Promise.all(
