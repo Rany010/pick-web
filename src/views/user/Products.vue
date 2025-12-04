@@ -130,11 +130,12 @@ const initCategoryFromUrl = () => {
 }
 
 // Load categories - 使用固定的分类列表
+// 注意：id 用于前端显示和筛选，slug 用于匹配数据库中的分类 slug
 const loadCategories = async () => {
-  // 固定的5个分类
+  // 固定的5个分类，slug 需要匹配数据库中的实际分类 slug
   const fixedCategories = [
-    { id: 'paddle', name: 'Paddle', slug: 'paddle' },
-    { id: 'pickleball', name: 'Pickleball', slug: 'pickleball' },
+    { id: 'paddles', name: 'Paddle', slug: 'paddles' }, // 数据库中是 'paddles'
+    { id: 'balls', name: 'Pickleball', slug: 'balls' }, // 数据库中是 'balls'
     { id: 'bags-accessories', name: 'Bags & Accessories', slug: 'bags-accessories' },
     { id: 'training-equipment', name: 'Training Equipment', slug: 'training-equipment' },
     { id: 'nets-courts', name: 'Nets & Courts', slug: 'nets-courts' }

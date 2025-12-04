@@ -47,8 +47,8 @@
         <div>
           <h4 class="text-lg font-bold mb-6">Categories</h4>
           <ul class="space-y-3">
-            <li><router-link to="/products?category=paddle" class="text-gray-400 hover:text-primary transition-colors">Paddle</router-link></li>
-            <li><router-link to="/products?category=pickleball" class="text-gray-400 hover:text-primary transition-colors">Pickleball</router-link></li>
+            <li><router-link to="/products?category=paddles" class="text-gray-400 hover:text-primary transition-colors">Paddle</router-link></li>
+            <li><router-link to="/products?category=balls" class="text-gray-400 hover:text-primary transition-colors">Pickleball</router-link></li>
             <li><router-link to="/products?category=bags-accessories" class="text-gray-400 hover:text-primary transition-colors">Bags & Accessories</router-link></li>
             <li><router-link to="/products?category=training-equipment" class="text-gray-400 hover:text-primary transition-colors">Training Equipment</router-link></li>
             <li><router-link to="/products?category=nets-courts" class="text-gray-400 hover:text-primary transition-colors">Nets & Courts</router-link></li>
