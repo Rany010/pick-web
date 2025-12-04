@@ -455,7 +455,6 @@ const scrollToTop = () => {
 }
 
 const handleImageError = (event) => {
-<<<<<<< HEAD
   console.error('🖼️ [Home] Banner 图片加载失败:', event.target.src)
   console.error('🖼️ [Home] 当前 activeBanner:', activeBanner.value)
   // 使用固定的占位图，而不是随机图片服务
@@ -487,13 +486,10 @@ const handleImageLoad = (event) => {
       errorMsg.remove()
     }
   }
-=======
-  event.target.src = 'https://picsum.photos/seed/hero/600/400'
 }
 
 const handleAboutImageError = (event) => {
   event.target.src = 'https://picsum.photos/seed/about/600/400'
->>>>>>> 68c17f6b018ded3db937132207af0d91b64eda24
 }
 
 onMounted(async () => {
