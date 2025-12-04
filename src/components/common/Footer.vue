@@ -4,16 +4,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <!-- Brand -->
         <div>
-          <div class="flex items-center space-x-3 mb-6">
-            <div class="bg-white rounded-lg p-1.5 flex items-center justify-center">
+          <div class="flex items-center space-x-4 mb-6">
+            <div class="bg-white rounded-lg p-2 flex items-center justify-center">
               <img 
                 src="/logn.jpg" 
                 alt="KAPO Logo" 
-                class="h-8 w-auto object-contain"
+                class="w-auto object-contain"
+                style="height: 3rem; max-height: 48px;"
                 loading="lazy"
               />
             </div>
-            <span class="text-xl font-bold text-white">PickleBall Hub</span>
+            <span class="text-xl font-bold bg-white px-3 py-1 rounded" style="color: #012D74;">PickleBall Hub</span>
           </div>
           <p class="text-gray-400 mb-6">
             Professional pickleball equipment supplier for players of all levels across North America and beyond.

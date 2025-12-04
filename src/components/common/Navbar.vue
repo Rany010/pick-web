@@ -4,14 +4,15 @@
   >
     <div class="container mx-auto px-4 flex items-center justify-between">
       <!-- Logo -->
-      <router-link to="/" class="flex items-center space-x-3 group" @click="mobileMenuOpen = false">
+      <router-link to="/" class="flex items-center space-x-4 group" @click="mobileMenuOpen = false">
         <img 
           src="/logn.jpg" 
           alt="KAPO Logo" 
-          class="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          class="w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          style="height: 3.5rem; max-height: 56px;"
           loading="eager"
         />
-        <span class="text-lg md:text-xl font-bold text-primary transition-colors group-hover:text-primary/90">PickleBall Hub</span>
+        <span class="text-xl md:text-2xl font-bold transition-colors group-hover:opacity-90" style="color: #012D74;">PickleBall Hub</span>
       </router-link>
       
       <!-- Desktop Navigation -->
