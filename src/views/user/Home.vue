@@ -542,13 +542,13 @@ onUnmounted(() => {
   @apply bg-secondary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-secondary/90 hover:shadow-lg transform hover:-translate-y-0.5;
 }
 
-/* Banner 按钮样式 - 圆角矩形，与整体风格一致 */
+/* Banner 按钮样式 - 参考 Wilson 设计 */
 .btn-banner-primary {
-  @apply bg-gray-900 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-lg inline-block text-center;
+  @apply bg-gray-900 text-white px-6 py-3 rounded-none font-medium transition-all duration-300 hover:bg-gray-800 inline-block text-center;
 }
 
 .btn-banner-secondary {
-  @apply bg-white/10 backdrop-blur-sm text-white border-2 border-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-white/20 hover:shadow-lg inline-block text-center;
+  @apply bg-white/10 backdrop-blur-sm text-white border-2 border-white px-6 py-3 rounded-none font-medium transition-all duration-300 hover:bg-white/20 inline-block text-center;
 }
 
 /* Banner 轮播过渡动画 */
