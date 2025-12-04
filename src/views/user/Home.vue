@@ -145,7 +145,7 @@
         </div>
         
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
           <ProductCard 
             v-for="product in featuredProducts" 
             :key="product.id"
@@ -386,7 +386,16 @@ const loadData = async () => {
 
     // 处理商品数据
     if (productsRes?.products) {
-      products.value = productsRes.products.map(p => ({
+      // 按创建时间或 ID 排序，保持上传顺序
+      const sortedProducts = [...productsRes.products].sort((a, b) => {
+        // 优先按 createdAt 排序，如果没有则按 ID 排序
+        if (a.createdAt && b.createdAt) {
+          return new Date(a.createdAt) - new Date(b.createdAt)
+        }
+        return (a.id || 0) - (b.id || 0)
+      })
+      
+      products.value = sortedProducts.map(p => ({
         id: p.id,
         name: p.nameEn,
         slug: p.slug,
@@ -397,13 +406,15 @@ const loadData = async () => {
         rating: Number(p.rating),
         reviewCount: p.reviewCount,
         badge: p.isFeatured ? 'Best Seller' : (p.isNew ? 'New' : null),
-        image: p.images[0]?.imageUrl || '/placeholder-product.svg', 
-        images: p.images.map(img => img.imageUrl || '/placeholder-product.svg'),
+        // 确保图片按上传顺序显示
+        image: p.images && p.images.length > 0 ? p.images[0].imageUrl : '/placeholder-product.svg', 
+        images: p.images ? p.images.map(img => img.imageUrl || '/placeholder-product.svg') : ['/placeholder-product.svg'],
         features: p.features || [],
         specifications: p.specifications || {},
         stock: p.stock,
         isFeatured: p.isFeatured,
-        isNew: p.isNew
+        isNew: p.isNew,
+        createdAt: p.createdAt
       }))
     }
 
