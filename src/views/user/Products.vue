@@ -14,18 +14,19 @@
     <section class="py-12 bg-white">
       <div class="container mx-auto px-4">
         <!-- Category Filter -->
-        <div class="flex justify-center mb-12 overflow-x-auto pb-2">
-          <div class="inline-flex bg-gray-100 rounded-full p-1">
+        <div class="flex justify-center mb-12 overflow-x-auto pb-2 scrollbar-hide">
+          <div class="inline-flex bg-gray-100 rounded-full p-1 gap-1">
             <button 
               v-for="category in categories" 
               :key="category.id"
               @click="selectedCategory = category.id"
               :class="[
-                'px-6 py-2 rounded-full font-medium transition-all duration-300',
+                'px-4 md:px-6 py-2 rounded-full font-medium transition-all duration-300 whitespace-nowrap text-sm md:text-base',
                 selectedCategory === category.id 
-                  ? 'text-primary bg-white shadow-sm' 
-                  : 'text-gray-600 hover:text-primary'
+                  ? 'bg-white shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-800'
               ]"
+              :style="selectedCategory === category.id ? { color: '#012D74' } : {}"
             >
               {{ category.name }}
             </button>
@@ -85,11 +86,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { getProductsList, getCategoriesList } from '../../api/products'
+import { getProductsList } from '../../api/products'
+
+const route = useRoute()
+const router = useRouter()
 
 const selectedCategory = ref('all')
 const categories = ref([{ id: 'all', name: 'All Products', slug: 'all' }])
@@ -104,22 +109,41 @@ const filteredProducts = computed(() => {
   return products.value.filter(p => p.category === selectedCategory.value)
 })
 
-// Load categories
-const loadCategories = async () => {
-  try {
-    const response = await getCategoriesList()
-    const apiCategories = response.map(c => ({
-      id: c.slug,
-      name: c.nameEn,
-      slug: c.slug
-    }))
-    categories.value = [
-      { id: 'all', name: 'All Products', slug: 'all' },
-      ...apiCategories
-    ]
-  } catch (err) {
-    console.error('加载分类失败:', err)
+// 监听分类变化，更新 URL 参数
+watch(selectedCategory, (newCategory) => {
+  if (newCategory === 'all') {
+    router.replace({ query: {} })
+  } else {
+    router.replace({ query: { category: newCategory } })
   }
+})
+
+// 从 URL 参数初始化分类
+const initCategoryFromUrl = () => {
+  const categoryParam = route.query.category
+  if (categoryParam && typeof categoryParam === 'string') {
+    const categoryExists = categories.value.some(c => c.id === categoryParam)
+    if (categoryExists) {
+      selectedCategory.value = categoryParam
+    }
+  }
+}
+
+// Load categories - 使用固定的分类列表
+const loadCategories = async () => {
+  // 固定的5个分类
+  const fixedCategories = [
+    { id: 'paddle', name: 'Paddle', slug: 'paddle' },
+    { id: 'pickleball', name: 'Pickleball', slug: 'pickleball' },
+    { id: 'bags-accessories', name: 'Bags & Accessories', slug: 'bags-accessories' },
+    { id: 'training-equipment', name: 'Training Equipment', slug: 'training-equipment' },
+    { id: 'nets-courts', name: 'Nets & Courts', slug: 'nets-courts' }
+  ]
+  
+  categories.value = [
+    { id: 'all', name: 'All Products', slug: 'all' },
+    ...fixedCategories
+  ]
 }
 
 // Load products
@@ -168,6 +192,7 @@ const loadProducts = async () => {
 
 onMounted(async () => {
   await loadCategories()
+  initCategoryFromUrl()
   await loadProducts()
 })
 </script>
