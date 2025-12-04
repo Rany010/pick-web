@@ -95,6 +95,21 @@
               </div>
             </div>
             
+            <!-- Company -->
+            <div class="flex items-start space-x-3 text-gray-400">
+              <div class="flex-shrink-0 w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center mt-0.5">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-white mb-1">Company</p>
+                <p class="text-sm leading-relaxed">
+                  Quanzhou Kapo Trading Co., Ltd.
+                </p>
+              </div>
+            </div>
+            
             <!-- Email -->
             <a 
               href="mailto:Echoliu0401@gmail.com" 
@@ -107,8 +122,7 @@
               </div>
               <div>
                 <p class="text-sm font-medium text-white mb-1">Email</p>
-                <p class="text-sm leading-relaxed">
-                  Quanzhou Kapo Trading Co., Ltd.<br>
+                <p class="text-sm">
                   Echoliu0401@gmail.com
                 </p>
               </div>
