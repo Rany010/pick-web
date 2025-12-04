@@ -4,8 +4,15 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <!-- Brand -->
         <div>
-          <div class="flex items-center space-x-2 mb-6">
-            <span class="text-2xl">🏓</span>
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="bg-white rounded-lg p-1.5 flex items-center justify-center">
+              <img 
+                src="/logn.jpg" 
+                alt="KAPO Logo" 
+                class="h-8 w-auto object-contain"
+                loading="lazy"
+              />
+            </div>
             <span class="text-xl font-bold text-white">PickleBall Hub</span>
           </div>
           <p class="text-gray-400 mb-6">

@@ -177,3 +177,56 @@ export function processBannerImages(banners, context = null) {
   return banners.map(banner => processBannerImage(banner, context))
 }
 
+/**
+ * 删除 Netlify Blob 图片
+ * @param {string} blobKey - Blob Key 或完整 URL
+ * @returns {Promise<boolean>} - 是否成功删除
+ */
+export async function deleteBlob(blobKey) {
+  if (!blobKey) return false
+  
+  try {
+    // 提取 blobKey（如果传入的是完整 URL）
+    const key = extractBlobKey(blobKey)
+    
+    // 跳过非 blob 图片（如 placeholder）
+    if (!key || key.startsWith('/') || key.startsWith('http')) {
+      console.log(`⏭️ 跳过删除非 Blob 图片: ${key}`)
+      return false
+    }
+    
+    // 使用 Netlify Blobs 删除
+    const { getStore } = await import('@netlify/blobs')
+    const store = getStore('images')
+    
+    await store.delete(key)
+    console.log(`🗑️ 成功删除 Blob: ${key}`)
+    return true
+  } catch (err) {
+    console.error(`❌ 删除 Blob 失败: ${blobKey}`, err)
+    return false
+  }
+}
+
+/**
+ * 批量删除 Blob 图片
+ * @param {Array<string>} blobKeys - Blob Keys 数组
+ * @returns {Promise<{success: number, failed: number}>} - 删除结果统计
+ */
+export async function deleteBlobsBatch(blobKeys) {
+  if (!Array.isArray(blobKeys) || blobKeys.length === 0) {
+    return { success: 0, failed: 0 }
+  }
+  
+  const results = await Promise.allSettled(
+    blobKeys.map(key => deleteBlob(key))
+  )
+  
+  const success = results.filter(r => r.status === 'fulfilled' && r.value === true).length
+  const failed = results.length - success
+  
+  console.log(`📊 批量删除 Blob 完成: 成功 ${success}, 失败 ${failed}`)
+  
+  return { success, failed }
+}
+

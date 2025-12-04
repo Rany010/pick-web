@@ -2,7 +2,16 @@
   <div class="min-h-screen bg-light">
     <Navbar />
     
-    <div v-if="product" class="pt-24 pb-16">
+    <!-- Loading State -->
+    <div v-if="loading" class="pt-32 pb-16 text-center">
+      <div class="container mx-auto px-4">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-gray-600">Loading product details...</p>
+      </div>
+    </div>
+    
+    <!-- Product Details -->
+    <div v-else-if="product" class="pt-24 pb-16">
       <div class="container mx-auto px-4">
         <!-- Breadcrumb -->
         <div class="mb-8 text-sm text-gray-600">
@@ -18,23 +27,35 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
             <!-- Product Images -->
             <div class="product-images">
-              <img 
-                :src="selectedImage" 
-                :alt="product.name" 
-                class="w-full h-80 object-cover rounded-lg mb-4"
-              >
-              <div v-if="product.images.length > 1" class="flex gap-3 overflow-x-auto pb-2">
+              <div class="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
                 <img 
+                  :src="selectedImage" 
+                  :alt="product.name" 
+                  class="w-full h-full object-cover"
+                  width="500"
+                  height="500"
+                  loading="eager"
+                >
+              </div>
+              <div v-if="product.images.length > 1" class="flex gap-3 overflow-x-auto pb-2">
+                <div
                   v-for="(image, index) in product.images" 
                   :key="index"
-                  :src="image" 
-                  :alt="`${product.name} ${index + 1}`" 
                   :class="[
-                    'w-20 h-20 object-cover rounded-md cursor-pointer border-2 transition-all',
+                    'w-20 h-20 flex-shrink-0 rounded-md cursor-pointer border-2 transition-all overflow-hidden',
                     selectedImage === image ? 'border-primary' : 'border-transparent hover:border-primary'
                   ]"
                   @click="selectedImage = image"
                 >
+                  <img 
+                    :src="image" 
+                    :alt="`${product.name} ${index + 1}`" 
+                    class="w-full h-full object-cover"
+                    width="80"
+                    height="80"
+                    loading="lazy"
+                  >
+                </div>
               </div>
             </div>
             
@@ -130,7 +151,7 @@
         <!-- Related Products -->
         <div class="mt-16">
           <h2 class="text-2xl font-bold mb-8">You May Also Like</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <ProductCard 
               v-for="relatedProduct in relatedProducts" 
               :key="relatedProduct.id"
@@ -163,14 +184,14 @@ import { useRoute } from 'vue-router'
 import Navbar from '../../components/common/Navbar.vue'
 import Footer from '../../components/common/Footer.vue'
 import ProductCard from '../../components/common/ProductCard.vue'
-import { getProductDetail, getProductsList } from '../../api/products'
+import { getProductDetail, getRelatedProducts } from '../../api/products'
 
 const route = useRoute()
 const productId = parseInt(route.params.id)
 
 const product = ref(null)
 const relatedProductsData = ref([])
-const loading = ref(false)
+const loading = ref(true) // 初始为 true，页面打开时显示加载状态
 const error = ref(null)
 const selectedImage = ref('')
 
@@ -225,16 +246,21 @@ const loadProduct = async () => {
   loading.value = true
   error.value = null
   try {
+    // 优化：使用专用的相关商品API，避免查询所有商品
+    // 1. 先获取商品详情
     const response = await getProductDetail(productId)
     product.value = transformProduct(response)
     selectedImage.value = product.value.images[0] || product.value.image
     
-    // Load related products
-    const relatedResponse = await getProductsList(product.value.category, 4, 0)
-    relatedProductsData.value = relatedResponse.products
-      .filter(p => p.id !== productId)
-      .slice(0, 3)
-      .map(transformProduct)
+    // 2. 并行获取相关商品（后端直接返回同类别商品，无需前端筛选）
+    getRelatedProducts(productId, 4)
+      .then(relatedProducts => {
+        relatedProductsData.value = relatedProducts.map(transformProduct)
+      })
+      .catch(err => {
+        console.warn('加载相关商品失败:', err)
+        relatedProductsData.value = [] // 失败时显示空列表，不影响主商品显示
+      })
   } catch (err) {
     error.value = err.message
     console.error('加载商品详情失败:', err)
@@ -260,4 +286,5 @@ watch(() => route.params.id, () => {
   @apply bg-primary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-primary/90 hover:shadow-lg;
 }
 </style>
+
 

@@ -237,11 +237,11 @@ const removeFeature = (index) => {
 const handleSave = async () => {
   loading.value = true
   try {
-    // Process contentRaw back to array
+    // Process contentRaw back to array (split by double newlines for paragraphs)
     form.value.content = contentRaw.value
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
+      .split(/\n\n+/)
+      .map(paragraph => paragraph.trim())
+      .filter(paragraph => paragraph.length > 0)
 
     const response = await updateSetting(
       'about_us', 
@@ -267,4 +267,6 @@ onMounted(() => {
   fetchSettings()
 })
 </script>
+
+
 

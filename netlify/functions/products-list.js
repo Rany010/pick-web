@@ -44,13 +44,14 @@ export const handler = async (event, context) => {
       }
     }
 
-    // 查询商品
+    // 查询商品（优化：列表页只加载第一张图片）
     const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sortOrder: 'asc' },
+          take: 1 // 列表页只需要第一张图片，减少数据传输
         },
         tags: {
           include: {

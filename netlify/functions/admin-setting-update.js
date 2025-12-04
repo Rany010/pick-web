@@ -1,6 +1,7 @@
 import prisma from './utils/db'
 import { success, error, options } from './utils/response'
 import { requireAuth } from './utils/auth'
+import { deleteBlob } from './utils/image.js'
 
 export const handler = async (event, context) => {
   // 添加请求日志
@@ -32,6 +33,32 @@ export const handler = async (event, context) => {
       return error('Missing required fields: key, value')
     }
 
+    // 获取现有设置（用于检查是否需要删除旧图片）
+    const existingSetting = await prisma.setting.findUnique({
+      where: { key }
+    })
+
+    // 如果是关于我们设置，检查是否需要删除旧图片
+    if (key === 'about_us' && existingSetting && type === 'json' && typeof value === 'object') {
+      try {
+        const oldValue = JSON.parse(existingSetting.value)
+        const newImageUrl = value.imageUrl
+        const oldImageUrl = oldValue.imageUrl
+
+        // 如果图片 URL 发生变化，删除旧图片 Blob
+        if (oldImageUrl && newImageUrl && oldImageUrl !== newImageUrl) {
+          console.log(`🗑️ 删除关于我们页面的旧图片`)
+          const deleted = await deleteBlob(oldImageUrl)
+          if (deleted) {
+            console.log(`✅ 已删除旧图片 Blob`)
+          }
+        }
+      } catch (e) {
+        // 如果解析失败，忽略（可能是首次创建）
+        console.log(`⚠️ 无法解析现有设置值，跳过图片删除检查`)
+      }
+    }
+
     // 如果 type 是 json，且 value 是对象，则 stringify
     let valueToStore = value
     if (type === 'json' && typeof value === 'object') {
@@ -46,14 +73,14 @@ export const handler = async (event, context) => {
       where: { key },
       update: {
         value: valueToStore,
-        description,
-        type: type || 'string',
-        updatedAt: new Date()
+        description: description || null,
+        type: type || 'string'
+        // updatedAt 由 Prisma @updatedAt 自动处理
       },
       create: {
         key,
         value: valueToStore,
-        description,
+        description: description || null,
         type: type || 'string'
       }
     })
@@ -62,13 +89,24 @@ export const handler = async (event, context) => {
     return success(setting)
   } catch (err) {
     console.error('❌ [admin-setting-update] Error:', err)
+    console.error('❌ [admin-setting-update] Error message:', err.message)
+    console.error('❌ [admin-setting-update] Error code:', err.code)
+    console.error('❌ [admin-setting-update] Error stack:', err.stack)
     
     // 检查是否是 Prisma 的 "Table does not exist" 错误
     // Postgres error code for undefined_table is 42P01, but Prisma might wrap it
     if (err.message && err.message.includes('does not exist')) {
          return error('Database table not found. Please run migrations.', 500, err.message)
     }
+    
+    // Prisma specific errors
+    if (err.code === 'P2002') {
+      return error('Unique constraint violation', 400, err.message)
+    }
+    if (err.code === 'P2025') {
+      return error('Record not found', 404, err.message)
+    }
 
-    return error('Internal server error', 500, err.message)
+    return error('Internal server error: ' + (err.message || 'Unknown error'), 500)
   }
 }

@@ -1,6 +1,7 @@
 import prismaModule from './utils/db.js'
 import { success, error, options } from './utils/response.js'
 import { requireAuth } from './utils/auth.js'
+import { deleteBlobsBatch } from './utils/image.js'
 
 const prisma = prismaModule.default || prismaModule
 
@@ -35,16 +36,30 @@ export const handler = async (event, context) => {
 
     console.log(`📦 管理员删除商品 - ID: ${productId}`)
 
-    // 检查商品是否存在
+    // 检查商品是否存在，并获取相关图片
     const existingProduct = await prisma.product.findUnique({
-      where: { id: productId }
+      where: { id: productId },
+      include: {
+        images: true
+      }
     })
 
     if (!existingProduct) {
       return error('Product not found', 404)
     }
 
-    // 删除商品（级联删除会自动删除相关的图片和标签关联）
+    // 收集需要删除的 Blob Keys
+    const blobKeys = existingProduct.images.map(img => img.imageUrl).filter(Boolean)
+    
+    console.log(`🗑️ 准备删除商品 "${existingProduct.nameEn}" 及其 ${blobKeys.length} 张图片`)
+
+    // 先删除 Netlify Blobs 中的图片
+    if (blobKeys.length > 0) {
+      const deleteResult = await deleteBlobsBatch(blobKeys)
+      console.log(`📊 Blob 删除结果: 成功 ${deleteResult.success}, 失败 ${deleteResult.failed}`)
+    }
+
+    // 删除商品（级联删除会自动删除相关的图片记录和标签关联）
     await prisma.product.delete({
       where: { id: productId }
     })

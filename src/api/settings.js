@@ -7,7 +7,6 @@ export const getSetting = async (key) => {
     const response = await axios.get(`${API_BASE}/get-setting`, {
       params: { key }
     })
-    // get-setting 返回 success(result)，即 response.data.data 就是 result
     return response.data.data
   } catch (error) {
     console.error(`Failed to fetch setting ${key}:`, error)
@@ -34,4 +33,6 @@ export const updateSetting = async (key, value, description = '', type = 'json')
     throw error
   }
 }
+
+
 

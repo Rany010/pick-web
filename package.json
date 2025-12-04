@@ -14,7 +14,9 @@
     "db:seed-admin": "node prisma/seed-admin.js",
     "db:seed-products": "node prisma/seed-products.js",
     "migrate:images": "node scripts/migrate-images-to-blobs.js",
-    "create:test-banner": "node scripts/create-test-banner.js"
+    "create:test-banner": "node scripts/create-test-banner.js",
+    "cleanup:blobs": "node scripts/cleanup-orphan-blobs.js",
+    "cleanup:blobs:delete": "node scripts/cleanup-orphan-blobs.js --delete"
   },
   "dependencies": {
     "@netlify/blobs": "^10.4.1",

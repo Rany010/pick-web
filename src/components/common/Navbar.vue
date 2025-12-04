@@ -4,9 +4,14 @@
   >
     <div class="container mx-auto px-4 flex items-center justify-between">
       <!-- Logo -->
-      <router-link to="/" class="flex items-center space-x-2">
-        <span class="text-2xl">🏓</span>
-        <span class="text-xl font-bold text-primary">PickleBall Hub</span>
+      <router-link to="/" class="flex items-center space-x-3 group" @click="mobileMenuOpen = false">
+        <img 
+          src="/logn.jpg" 
+          alt="KAPO Logo" 
+          class="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          loading="eager"
+        />
+        <span class="text-lg md:text-xl font-bold text-primary transition-colors group-hover:text-primary/90">PickleBall Hub</span>
       </router-link>
       
       <!-- Desktop Navigation -->
@@ -14,7 +19,6 @@
         <router-link to="/" class="font-medium hover:text-primary transition-colors">Home</router-link>
         <router-link to="/products" class="font-medium hover:text-primary transition-colors">Products</router-link>
         <a href="#about" class="font-medium hover:text-primary transition-colors">About</a>
-        <a href="#contact" class="font-medium hover:text-primary transition-colors">Contact</a>
       </nav>
       
       <!-- Mobile Menu Button -->
@@ -42,8 +46,7 @@
         <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
           <router-link to="/" class="font-medium hover:text-primary transition-colors py-2 border-b border-gray-100" @click="mobileMenuOpen = false">Home</router-link>
           <router-link to="/products" class="font-medium hover:text-primary transition-colors py-2 border-b border-gray-100" @click="mobileMenuOpen = false">Products</router-link>
-          <a href="#about" class="font-medium hover:text-primary transition-colors py-2 border-b border-gray-100" @click="mobileMenuOpen = false">About</a>
-          <a href="#contact" class="font-medium hover:text-primary transition-colors py-2" @click="mobileMenuOpen = false">Contact</a>
+          <a href="#about" class="font-medium hover:text-primary transition-colors py-2" @click="mobileMenuOpen = false">About</a>
         </div>
       </div>
     </transition>

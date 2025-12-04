@@ -54,10 +54,13 @@ export const handler = async (event, context) => {
       return error('商品不存在', 404)
     }
 
-    // 增加浏览次数
-    await prisma.product.update({
+    // 异步增加浏览次数（不等待完成，避免阻塞响应）
+    // 使用 Promise 但不 await，让它在后台执行
+    prisma.product.update({
       where: { id: product.id },
       data: { viewCount: { increment: 1 } }
+    }).catch(err => {
+      console.error('更新浏览次数失败:', err)
     })
 
     // 处理产品图片 URL，将 blobKey 转换为完整 URL
