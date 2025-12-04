@@ -9,7 +9,7 @@
           src="/logn.jpg" 
           alt="KAPO Logo" 
           class="w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-          style="height: 3.5rem; max-height: 56px;"
+          style="height: 5rem; min-height: 60px;"
           loading="eager"
         />
         <span class="text-xl md:text-2xl font-bold transition-colors group-hover:opacity-90" style="color: #012D74;">PickleBall Hub</span>

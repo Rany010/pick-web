@@ -5,12 +5,12 @@
         <!-- Brand -->
         <div>
           <div class="flex items-center space-x-4 mb-6">
-            <div class="bg-white rounded-lg p-2 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-2.5 flex items-center justify-center">
               <img 
                 src="/logn.jpg" 
                 alt="KAPO Logo" 
                 class="w-auto object-contain"
-                style="height: 3rem; max-height: 48px;"
+                style="height: 4.5rem; min-height: 54px;"
                 loading="lazy"
               />
             </div>
