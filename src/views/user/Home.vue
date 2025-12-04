@@ -3,138 +3,137 @@
     <Navbar />
     
     <!-- Hero Section with Banner Carousel -->
-    <section class="pt-20 md:pt-24 pb-6 md:pb-8 bg-gradient-to-br from-primary/10 via-white to-secondary/10">
-      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
-        <div class="md:w-1/2">
-          
+    <section class="relative pt-20 md:pt-24 h-[500px] md:h-[600px] overflow-hidden">
+      <!-- Banner 图片轮播 - 全屏背景 -->
+      <div class="absolute inset-0">
+        <!-- 加载中骨架屏 -->
+        <div v-if="loading" class="w-full h-full bg-gray-200 animate-pulse"></div>
+        <!-- 实际 Banner 图片 -->
+        <transition v-else name="banner-fade" mode="out-in">
+          <img 
+            v-if="activeBanner?.imageUrl"
+            :key="currentBannerIndex"
+            :src="activeBanner.imageUrl" 
+            :alt="activeBanner.title || 'Pickleball Equipment'" 
+            class="w-full h-full object-cover"
+            @error="handleImageError"
+          >
+          <div 
+            v-else
+            class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+          >
+            <div class="text-center text-gray-400">
+              <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="text-sm">暂无 Banner 图片</p>
+            </div>
+          </div>
+        </transition>
+        <!-- 半透明遮罩层，确保文字可读性 -->
+        <div class="absolute inset-0 bg-black/30"></div>
+      </div>
+      
+      <!-- 文字内容 - 浮于图片上方 -->
+      <div class="relative z-10 h-full flex items-center">
+        <div class="container mx-auto px-4 md:px-8">
           <!-- 加载中状态 -->
           <template v-if="loading">
-            <div class="animate-pulse">
-              <div class="h-12 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div class="h-8 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div class="animate-pulse max-w-2xl">
+              <div class="h-10 bg-white/30 rounded w-3/4 mb-4"></div>
+              <div class="h-6 bg-white/30 rounded w-1/2 mb-8"></div>
               <div class="flex gap-4">
-                <div class="h-12 bg-gray-200 rounded-full w-32"></div>
-                <div class="h-12 bg-gray-200 rounded-full w-32"></div>
+                <div class="h-12 bg-white/30 rounded w-32"></div>
+                <div class="h-12 bg-white/30 rounded w-32"></div>
               </div>
             </div>
           </template>
           
           <!-- Banner 内容 -->
           <template v-else-if="activeBanner">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4 transition-opacity duration-500">
-              {{ activeBanner.title || 'Premium Pickleball Equipment' }}<br>
-              <span class="text-primary" v-if="bannerSubtitle">{{ bannerSubtitle }}</span>
-              <span class="text-primary" v-else>Elevate Your Game</span>
-            </h1>
-            <div class="flex flex-col sm:flex-row gap-4 mt-8">
-              <router-link 
-                :to="activeBanner.linkUrl || '/products'" 
-                class="btn-primary text-center"
-              >
-                {{ activeBanner.buttonText || 'Shop Now' }}
-              </router-link>
-              <a href="#about" class="btn-secondary text-center">
-                Learn More
-              </a>
+            <div class="max-w-2xl text-white">
+              <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4 transition-opacity duration-500 drop-shadow-lg">
+                {{ activeBanner.title || 'Premium Pickleball Equipment' }}
+              </h1>
+              <p class="text-base md:text-lg mb-6 text-white drop-shadow-md" v-if="bannerSubtitle">
+                {{ bannerSubtitle }}
+              </p>
+              <p class="text-base md:text-lg mb-6 text-white drop-shadow-md" v-else>
+                Elevate Your Game
+              </p>
+              <div class="flex flex-col sm:flex-row gap-4">
+                <router-link 
+                  :to="activeBanner.linkUrl || '/products'" 
+                  class="btn-banner-primary"
+                >
+                  {{ activeBanner.buttonText || 'Shop Now' }}
+                </router-link>
+                <a href="#about" class="btn-banner-secondary">
+                  Learn More
+                </a>
+              </div>
             </div>
           </template>
           
           <!-- 默认内容（无 Banner 时） -->
           <template v-else>
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
-              Premium Pickleball Equipment,<br>
-              <span class="text-primary">Elevate Your Game</span>
-            </h1>
-            <div class="flex flex-col sm:flex-row gap-4 mt-8">
-              <router-link to="/products" class="btn-primary text-center">
-                Shop Now
-              </router-link>
-              <a href="#about" class="btn-secondary text-center">
-                Learn More
-              </a>
+            <div class="max-w-2xl text-white">
+              <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4 drop-shadow-lg">
+                Premium Pickleball Equipment
+              </h1>
+              <p class="text-base md:text-lg mb-6 text-white drop-shadow-md">
+                Elevate Your Game
+              </p>
+              <div class="flex flex-col sm:flex-row gap-4">
+                <router-link to="/products" class="btn-banner-primary">
+                  Shop Now
+                </router-link>
+                <a href="#about" class="btn-banner-secondary">
+                  Learn More
+                </a>
+              </div>
             </div>
           </template>
         </div>
-        
-        <div class="md:w-1/2 mt-12 md:mt-0">
-          <div class="relative">
-            <!-- Banner 图片轮播 -->
-            <div class="relative overflow-hidden rounded-xl shadow-2xl">
-              <!-- 加载中骨架屏 -->
-              <div v-if="loading" class="w-full h-[300px] md:h-[400px] bg-gray-200 animate-pulse"></div>
-              <!-- 实际 Banner 图片 -->
-              <transition v-else name="banner-fade" mode="out-in">
-                <img 
-                  v-if="activeBanner?.imageUrl"
-                  :key="currentBannerIndex"
-                  :src="activeBanner.imageUrl" 
-                  :alt="activeBanner.title || 'Pickleball Equipment'" 
-                  class="w-full object-cover h-[300px] md:h-[400px]"
-                  @error="handleImageError"
-                >
-                <div 
-                  v-else
-                  class="w-full h-[300px] md:h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
-                >
-                  <div class="text-center text-gray-400">
-                    <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p class="text-sm">暂无 Banner 图片</p>
-                  </div>
-                </div>
-              </transition>
-            </div>
-            
-            <!-- 轮播指示器 -->
-            <div v-if="banners.length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              <button 
-                v-for="(banner, index) in banners" 
-                :key="banner.id"
-                @click="goToBanner(index)"
-                :class="[
-                  'w-3 h-3 rounded-full transition-all duration-300',
-                  currentBannerIndex === index 
-                    ? 'bg-primary w-8' 
-                    : 'bg-white/70 hover:bg-white'
-                ]"
-                :aria-label="`Go to banner ${index + 1}`"
-              />
-            </div>
-            
-            <!-- 左右箭头 -->
-            <template v-if="banners.length > 1">
-              <button 
-                @click="prevBanner"
-                class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                aria-label="Previous banner"
-              >
-                <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-              </button>
-              <button 
-                @click="nextBanner"
-                class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                aria-label="Next banner"
-              >
-                <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </template>
-            
-            <!-- 折扣标签 - 使用 subtitle 字段，格式如 "标题文字|Special Offer|20% OFF" -->
-            <div 
-              v-if="bannerPromoTag"
-              class="absolute -bottom-6 -left-6 bg-accent text-dark p-4 rounded-lg shadow-lg transform rotate-3"
-            >
-              <p class="font-bold text-lg">{{ bannerPromoTag.title }}</p>
-              <p class="text-sm">{{ bannerPromoTag.discount }}</p>
-            </div>
-          </div>
-        </div>
       </div>
+      
+      <!-- 轮播指示器 -->
+      <div v-if="banners.length > 1" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
+        <button 
+          v-for="(banner, index) in banners" 
+          :key="banner.id"
+          @click="goToBanner(index)"
+          :class="[
+            'w-2 h-2 rounded-full transition-all duration-300',
+            currentBannerIndex === index 
+              ? 'bg-white w-8' 
+              : 'bg-white/50 hover:bg-white/70'
+          ]"
+          :aria-label="`Go to banner ${index + 1}`"
+        />
+      </div>
+      
+      <!-- 左右箭头 -->
+      <template v-if="banners.length > 1">
+        <button 
+          @click="prevBanner"
+          class="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
+          aria-label="Previous banner"
+        >
+          <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <button 
+          @click="nextBanner"
+          class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
+          aria-label="Next banner"
+        >
+          <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </template>
     </section>
 
     <!-- Featured Products Section -->
@@ -530,6 +529,15 @@ onUnmounted(() => {
 
 .btn-secondary {
   @apply bg-secondary text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-secondary/90 hover:shadow-lg transform hover:-translate-y-0.5;
+}
+
+/* Banner 按钮样式 - 参考 Wilson 设计 */
+.btn-banner-primary {
+  @apply bg-gray-900 text-white px-6 py-3 rounded-none font-medium transition-all duration-300 hover:bg-gray-800 inline-block text-center;
+}
+
+.btn-banner-secondary {
+  @apply bg-white/10 backdrop-blur-sm text-white border-2 border-white px-6 py-3 rounded-none font-medium transition-all duration-300 hover:bg-white/20 inline-block text-center;
 }
 
 /* Banner 轮播过渡动画 */
