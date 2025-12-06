@@ -194,10 +194,39 @@
                     <!-- Primary Badge -->
                     <span
                       v-if="index === 0"
-                      class="absolute top-1 left-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded"
+                      class="absolute top-1 left-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded shadow-sm z-10"
                     >
                       Primary
                     </span>
+                    
+                    <!-- Sort Controls -->
+                    <div class="absolute bottom-1 left-1 right-1 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        type="button"
+                        v-if="index > 0"
+                        @click="moveImage(index, -1)"
+                        class="p-1 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-75 focus:outline-none"
+                        title="Move Left"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <div v-else></div> <!-- Spacer -->
+
+                      <button
+                        type="button"
+                        v-if="index < productImages.length - 1"
+                        @click="moveImage(index, 1)"
+                        class="p-1 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-75 focus:outline-none"
+                        title="Move Right"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+
                     <!-- Delete Button -->
                     <button
                       type="button"
@@ -586,6 +615,17 @@ const uploadImage = async (imageData) => {
 // 删除图片
 const removeImage = (index) => {
   productImages.value.splice(index, 1)
+}
+
+// 移动图片顺序
+const moveImage = (index, direction) => {
+  const newIndex = index + direction
+  if (newIndex >= 0 && newIndex < productImages.value.length) {
+    // 使用 splice 进行交换，保证 Vue 响应式更新
+    const item = productImages.value[index]
+    productImages.value.splice(index, 1)
+    productImages.value.splice(newIndex, 0, item)
+  }
 }
 
 const handleSubmit = () => {
